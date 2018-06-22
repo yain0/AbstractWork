@@ -1,0 +1,282 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{92C588FB-347A-4D3F-948C-A08891347860}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>AbstractWorkView</RootNamespace>
+    <AssemblyName>AbstractWorkView</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CommonServiceLocator, Version=2.0.3.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
+      <HintPath>..\packages\Unity.5.7.2\lib\net46\CommonServiceLocator.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Unity.Abstractions, Version=3.3.0.0, Culture=neutral, PublicKeyToken=6d32ff45e0ccc69f, processorArchitecture=MSIL">
+      <HintPath>..\packages\Unity.5.7.2\lib\net46\Unity.Abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Unity.Configuration, Version=5.2.1.0, Culture=neutral, PublicKeyToken=6d32ff45e0ccc69f, processorArchitecture=MSIL">
+      <HintPath>..\packages\Unity.5.7.2\lib\net46\Unity.Configuration.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Unity.Container, Version=5.7.2.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
+      <HintPath>..\packages\Unity.5.7.2\lib\net46\Unity.Container.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Unity.Interception, Version=5.5.1.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
+      <HintPath>..\packages\Unity.5.7.2\lib\net46\Unity.Interception.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Unity.Interception.Configuration, Version=5.1.4.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
+      <HintPath>..\packages\Unity.5.7.2\lib\net46\Unity.Interception.Configuration.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Unity.RegistrationByConvention, Version=2.1.5.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
+      <HintPath>..\packages\Unity.5.7.2\lib\net46\Unity.RegistrationByConvention.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Unity.ServiceLocation, Version=2.1.2.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
+      <HintPath>..\packages\Unity.5.7.2\lib\net46\Unity.ServiceLocation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="FormCreateActivity.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormCreateActivity.Designer.cs">
+      <DependentUpon>FormCreateActivity.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormCustomer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormCustomer.Designer.cs">
+      <DependentUpon>FormCustomer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormCustomers.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormCustomers.Designer.cs">
+      <DependentUpon>FormCustomers.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormMaterial.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormMaterial.Designer.cs">
+      <DependentUpon>FormMaterial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormMaterials.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormMaterials.Designer.cs">
+      <DependentUpon>FormMaterials.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormMy.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormMy.Designer.cs">
+      <DependentUpon>FormMy.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormPutOnSklad.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormPutOnSklad.Designer.cs">
+      <DependentUpon>FormPutOnSklad.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormSklad.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormSklad.Designer.cs">
+      <DependentUpon>FormSklad.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormSklads.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormSklads.Designer.cs">
+      <DependentUpon>FormSklads.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormTakeActivityInWork.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormTakeActivityInWork.Designer.cs">
+      <DependentUpon>FormTakeActivityInWork.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormWorker.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormWorker.Designer.cs">
+      <DependentUpon>FormWorker.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormRemont.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormRemont.Designer.cs">
+      <DependentUpon>FormRemont.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormRemontMaterial.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormRemontMaterial.Designer.cs">
+      <DependentUpon>FormRemontMaterial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormRemonts.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormRemonts.Designer.cs">
+      <DependentUpon>FormRemonts.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormWorkers.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormWorkers.Designer.cs">
+      <DependentUpon>FormWorkers.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="FormCreateActivity.resx">
+      <DependentUpon>FormCreateActivity.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormCustomer.resx">
+      <DependentUpon>FormCustomer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormCustomers.resx">
+      <DependentUpon>FormCustomers.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormMaterial.resx">
+      <DependentUpon>FormMaterial.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormMaterials.resx">
+      <DependentUpon>FormMaterials.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormMy.resx">
+      <DependentUpon>FormMy.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormPutOnSklad.resx">
+      <DependentUpon>FormPutOnSklad.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormSklad.resx">
+      <DependentUpon>FormSklad.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormSklads.resx">
+      <DependentUpon>FormSklads.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormTakeActivityInWork.resx">
+      <DependentUpon>FormTakeActivityInWork.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormWorker.resx">
+      <DependentUpon>FormWorker.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormRemont.resx">
+      <DependentUpon>FormRemont.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormRemontMaterial.resx">
+      <DependentUpon>FormRemontMaterial.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormRemonts.resx">
+      <DependentUpon>FormRemonts.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormWorkers.resx">
+      <DependentUpon>FormWorkers.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AbstractShopModel\AbstractWorkModel.csproj">
+      <Project>{5edcfafa-0f3a-4810-8489-4d221a86ad1e}</Project>
+      <Name>AbstractWorkModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AbstractShopService\AbstractWorkService.csproj">
+      <Project>{2bc53217-7680-45d4-970e-944996e6ab2e}</Project>
+      <Name>AbstractWorkService</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="System\" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.6.1 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
