@@ -20,7 +20,7 @@ namespace AbstractWorkView
         {
             try
             {
-                List<ActivityViewModel> list = Task.Run(() => APICustomer.GetRequestData<List<ActivityViewModel>>("api/Main/GetList")).Result;
+                List<ActivityViewModel> list = Task.Run(() => APICustomer.GetRequestData<List<ActivityViewModel>>("api/My/GetList")).Result;
                 if (list != null)
                 {
                     dataGridView.DataSource = list;
@@ -210,6 +210,12 @@ namespace AbstractWorkView
         private void заказыКлиентовToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var form = new FormCustomerActivitys();
+            form.ShowDialog();
+        }
+
+        private void письмаToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var form = new FormMails();
             form.ShowDialog();
         }
     }

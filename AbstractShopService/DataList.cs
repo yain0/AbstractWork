@@ -7,32 +7,32 @@ namespace AbstractWorkService
     {
         private static DataListSingleton instance;
 
-        public List<Сustomer> Customer { get; set; }
+        public List<Сustomer> Customers { get; set; }
 
-        public List<Material> Material { get; set; }
+        public List<Material> Materials { get; set; }
 
-        public List<Worker> Worker { get; set; }
+        public List<Worker> Workers { get; set; }
 
-        public List<Activity> Activity { get; set; }
+        public List<Activity> Activitys { get; set; }
 
-        public List<Remont> Remont { get; set; }
+        public List<Remont> Remonts { get; set; }
 
-        public List<RemontMaterial> RemontMaterial { get; set; }
+        public List<RemontMaterial> RemontMaterials { get; set; }
 
-        public List<Sklad> Sklad { get; set; }
+        public List<Sklad> Sklads { get; set; }
 
-        public List<SkladMaterial> SkladMaterial { get; set; }
+        public List<SkladMaterial> SkladMaterials { get; set; }
 
         private DataListSingleton()
         {
-            Customer = new List<Сustomer>();
-            Material = new List<Material>();
-            Worker = new List<Worker>();
-            Activity = new List<Activity>();
-            Remont = new List<Remont>();
-            RemontMaterial = new List<RemontMaterial>();
-            Sklad = new List<Sklad>();
-            SkladMaterial = new List<SkladMaterial>();
+            Customers = new List<Сustomer>();
+            Materials = new List<Material>();
+            Workers = new List<Worker>();
+            Activitys = new List<Activity>();
+            Remonts = new List<Remont>();
+            RemontMaterials = new List<RemontMaterial>();
+            Sklads = new List<Sklad>();
+            SkladMaterials = new List<SkladMaterial>();
         }
 
         public static DataListSingleton GetInstance()

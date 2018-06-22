@@ -19,7 +19,7 @@ namespace AbstractWorkService.ImplementationsList
 
         public List<MaterialViewModel> GetList()
         {
-            List<MaterialViewModel> result = source.Material
+            List<MaterialViewModel> result = source.Materials
                 .Select(rec => new MaterialViewModel
                 {
                     Id = rec.Id,
@@ -31,7 +31,7 @@ namespace AbstractWorkService.ImplementationsList
 
         public MaterialViewModel GetElement(int id)
         {
-            Material element = source.Material.FirstOrDefault(rec => rec.Id == id);
+            Material element = source.Materials.FirstOrDefault(rec => rec.Id == id);
             if (element != null)
             {
                 return new MaterialViewModel
@@ -45,13 +45,13 @@ namespace AbstractWorkService.ImplementationsList
 
         public void AddElement(MaterialBindingModel model)
         {
-            Material element = source.Material.FirstOrDefault(rec => rec.MaterialName == model.MaterialName);
+            Material element = source.Materials.FirstOrDefault(rec => rec.MaterialName == model.MaterialName);
             if (element != null)
             {
                     throw new Exception("Уже есть компонент с таким названием");
             }
-            int maxId = source.Material.Count > 0 ? source.Material.Max(rec => rec.Id) : 0;
-            source.Material.Add(new Material
+            int maxId = source.Materials.Count > 0 ? source.Materials.Max(rec => rec.Id) : 0;
+            source.Materials.Add(new Material
             {
                 Id = maxId + 1,
                 MaterialName = model.MaterialName
@@ -60,13 +60,13 @@ namespace AbstractWorkService.ImplementationsList
 
         public void UpdElement(MaterialBindingModel model)
         {
-            Material element = source.Material.FirstOrDefault(rec =>
+            Material element = source.Materials.FirstOrDefault(rec =>
 rec.MaterialName == model.MaterialName && rec.Id != model.Id);
             if (element != null)
             {
                     throw new Exception("Уже есть компонент с таким названием");
             }
-            element = source.Material.FirstOrDefault(rec => rec.Id == model.Id);
+            element = source.Materials.FirstOrDefault(rec => rec.Id == model.Id);
             if (element == null)
             {
                 throw new Exception("Элемент не найден");
@@ -76,10 +76,10 @@ rec.MaterialName == model.MaterialName && rec.Id != model.Id);
 
         public void DelElement(int id)
         {
-            Material element = source.Material.FirstOrDefault(rec => rec.Id == id);
+            Material element = source.Materials.FirstOrDefault(rec => rec.Id == id);
             if (element != null)
             {
-                source.Material.Remove(element);
+                source.Materials.Remove(element);
             }
             else
             {

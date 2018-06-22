@@ -19,7 +19,7 @@ namespace AbstractWorkService.ImplementationsList
 
         public List<ActivityViewModel> GetList()
         {
-            List<ActivityViewModel> result = source.Activity
+            List<ActivityViewModel> result = source.Activitys
                 .Select(rec => new ActivityViewModel
                 {
                     Id = rec.Id,
@@ -31,11 +31,11 @@ namespace AbstractWorkService.ImplementationsList
                     Status = rec.Status.ToString(),
                     Koll = rec.Koll,
                     Summa = rec.Summa,
-                    CustomerFIO = source.Customer
+                    CustomerFIO = source.Customers
                                     .FirstOrDefault(recC => recC.Id == rec.CustomerId)?.CustomerFIO,
-                    RemontName = source.Remont
+                    RemontName = source.Remonts
                                     .FirstOrDefault(recP => recP.Id == rec.RemontId)?.RemontName,
-                    WorkerName = source.Worker
+                    WorkerName = source.Workers
                                     .FirstOrDefault(recI => recI.Id == rec.WorkerId)?.WorkerFIO
                 })
                 .ToList();
@@ -44,8 +44,8 @@ namespace AbstractWorkService.ImplementationsList
 
         public void CreateActivity(ActivityBindingModel model)
         {
-            int maxId = source.Activity.Count > 0 ? source.Activity.Max(rec => rec.Id) : 0;
-            source.Activity.Add(new Activity
+            int maxId = source.Activitys.Count > 0 ? source.Activitys.Max(rec => rec.Id) : 0;
+            source.Activitys.Add(new Activity
             {
                 Id = maxId + 1,
                 CustomerId = model.CustomerId,
@@ -59,21 +59,21 @@ namespace AbstractWorkService.ImplementationsList
 
         public void TakeActivityInWork(ActivityBindingModel model)
         {
-            Activity element = source.Activity.FirstOrDefault(rec => rec.Id == model.Id);
+            Activity element = source.Activitys.FirstOrDefault(rec => rec.Id == model.Id);
             if (element == null)
             {
                 throw new Exception("Элемент не найден");
             }
             // смотрим по количеству компонентов на складах
-            var remontMaterials = source.RemontMaterial.Where(rec => rec.RemontId == element.RemontId);
+            var remontMaterials = source.RemontMaterials.Where(rec => rec.RemontId == element.RemontId);
             foreach (var remontMaterial in remontMaterials)
             {
-                int countOnSklads = source.SkladMaterial
+                int countOnSklads = source.SkladMaterials
                                             .Where(rec => rec.MaterialId == remontMaterial.MaterialId)
                                             .Sum(rec => rec.Koll);
                 if (countOnSklads < remontMaterial.Koll * element.Koll)
                 {
-                    var materialName = source.Material
+                    var materialName = source.Materials
                                      .FirstOrDefault(rec => rec.Id == remontMaterial.MaterialId);
                     throw new Exception("Не достаточно компонента " + materialName?.MaterialName +
 " требуется " + remontMaterial.Koll + ", в наличии " + countOnSklads);
@@ -83,7 +83,7 @@ namespace AbstractWorkService.ImplementationsList
             foreach (var remontMaterial in remontMaterials)
             {
                 int countOnSklads = remontMaterial.Koll * element.Koll;
-                var skladMaterials = source.SkladMaterial
+                var skladMaterials = source.SkladMaterials
                                             .Where(rec => rec.MaterialId == remontMaterial.MaterialId);
                 foreach (var skladMaterial in skladMaterials)
                 {
@@ -107,7 +107,7 @@ namespace AbstractWorkService.ImplementationsList
 
         public void FinishActivity(int id)
         {
-            Activity element = source.Activity.FirstOrDefault(rec => rec.Id == id);
+            Activity element = source.Activitys.FirstOrDefault(rec => rec.Id == id);
             if (element == null)
             {
                 throw new Exception("Элемент не найден");
@@ -117,7 +117,7 @@ namespace AbstractWorkService.ImplementationsList
 
         public void PayActivity(int id)
         {
-            Activity element = source.Activity.FirstOrDefault(rec => rec.Id == id);
+            Activity element = source.Activitys.FirstOrDefault(rec => rec.Id == id);
             if (element == null)
             {
                 throw new Exception("Элемент не найден");
@@ -127,7 +127,7 @@ namespace AbstractWorkService.ImplementationsList
 
         public void PutMaterialOnSklad(SkladMaterialBindingModel model)
         {
-            SkladMaterial element = source.SkladMaterial
+            SkladMaterial element = source.SkladMaterials
                                                 .FirstOrDefault(rec => rec.SkladId == model.SkladId &&
 rec.MaterialId == model.MaterialId);
             if (element != null)
@@ -136,8 +136,8 @@ rec.MaterialId == model.MaterialId);
             }
             else
             {
-                int maxId = source.SkladMaterial.Count > 0 ? source.SkladMaterial.Max(rec => rec.Id) : 0;
-                source.SkladMaterial.Add(new SkladMaterial
+                int maxId = source.SkladMaterials.Count > 0 ? source.SkladMaterials.Max(rec => rec.Id) : 0;
+                source.SkladMaterials.Add(new SkladMaterial
                 {
                     Id = ++maxId,
                     SkladId = model.SkladId,

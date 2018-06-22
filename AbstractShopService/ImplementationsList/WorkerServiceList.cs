@@ -19,7 +19,7 @@ namespace AbstractWorkService.ImplementationsList
 
         public List<WorkerViewModel> GetList()
         {
-            List<WorkerViewModel> result = source.Worker
+            List<WorkerViewModel> result = source.Workers
                .Select(rec => new WorkerViewModel
                {
                    Id = rec.Id,
@@ -31,7 +31,7 @@ namespace AbstractWorkService.ImplementationsList
 
         public WorkerViewModel GetElement(int id)
         {
-            Worker element = source.Worker.FirstOrDefault(rec => rec.Id == id);
+            Worker element = source.Workers.FirstOrDefault(rec => rec.Id == id);
             if (element != null)
             {
                     return new WorkerViewModel
@@ -45,13 +45,13 @@ namespace AbstractWorkService.ImplementationsList
 
         public void AddElement(WorkerBindingModel model)
         {
-            Worker element = source.Worker.FirstOrDefault(rec => rec.WorkerFIO == model.WorkerFIO);
+            Worker element = source.Workers.FirstOrDefault(rec => rec.WorkerFIO == model.WorkerFIO);
             if (element != null)
             {
                     throw new Exception("Уже есть сотрудник с таким ФИО");
             }
-            int maxId = source.Worker.Count > 0 ? source.Worker.Max(rec => rec.Id) : 0;
-            source.Worker.Add(new Worker
+            int maxId = source.Workers.Count > 0 ? source.Workers.Max(rec => rec.Id) : 0;
+            source.Workers.Add(new Worker
             {
                 Id = maxId + 1,
                 WorkerFIO = model.WorkerFIO
@@ -60,13 +60,13 @@ namespace AbstractWorkService.ImplementationsList
 
         public void UpdElement(WorkerBindingModel model)
         {
-            Worker element = source.Worker.FirstOrDefault(rec =>
+            Worker element = source.Workers.FirstOrDefault(rec =>
 rec.WorkerFIO == model.WorkerFIO && rec.Id != model.Id);
             if (element != null)
             {
                     throw new Exception("Уже есть сотрудник с таким ФИО");
             }
-            element = source.Worker.FirstOrDefault(rec => rec.Id == model.Id);
+            element = source.Workers.FirstOrDefault(rec => rec.Id == model.Id);
             if (element == null)
             {
                 throw new Exception("Элемент не найден");
@@ -76,10 +76,10 @@ rec.WorkerFIO == model.WorkerFIO && rec.Id != model.Id);
 
         public void DelElement(int id)
         {
-            Worker element = source.Worker.FirstOrDefault(rec => rec.Id == id);
+            Worker element = source.Workers.FirstOrDefault(rec => rec.Id == id);
             if (element != null)
             {
-                source.Worker.Remove(element);
+                source.Workers.Remove(element);
             }
             else
             {

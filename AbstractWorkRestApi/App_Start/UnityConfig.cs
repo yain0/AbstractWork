@@ -57,6 +57,7 @@ new Lazy<IUnityContainer>(() =>
             container.RegisterType<ISkladService, SkladServiceBD>(new HierarchicalLifetimeManager());
             container.RegisterType<IMyService, MyServiceBD>(new HierarchicalLifetimeManager());
             container.RegisterType<IReportService, ReportServiceBD>(new HierarchicalLifetimeManager());
+            container.RegisterType<IMessageInfoService, MessageInfoServiceBD>(new HierarchicalLifetimeManager());
         }
     }
 }

@@ -12,7 +12,12 @@ namespace AbstractWorkModel
         [Required]
         public string CustomerFIO { get; set; }
 
+        public string Mail { get; set; }
+
         [ForeignKey("CustomerId")]
         public virtual List<Activity> Activitys { get; set; }
+
+        [ForeignKey("CustomerId")]
+        public virtual List<MessageInfo> MessageInfos { get; set; }
     }
 }

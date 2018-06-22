@@ -91,6 +91,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MessageInfo.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />
     <Compile Include="Сustomer.cs" />
     <Compile Include="Material.cs" />

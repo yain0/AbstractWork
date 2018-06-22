@@ -7,6 +7,9 @@ using System.Collections.Generic;
 using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Data.Entity;
+using System.Net.Mail;
+using System.Net;
+using System.Configuration;
 
 namespace AbstractWorkService.WorkationsBD
 {
@@ -48,7 +51,7 @@ namespace AbstractWorkService.WorkationsBD
 
         public void CreateActivity(ActivityBindingModel model)
         {
-            context.Activitys.Add(new Activity
+            var activity = new Activity
             {
                 CustomerId = model.CustomerId,
                 RemontId = model.RemontId,
@@ -56,8 +59,14 @@ namespace AbstractWorkService.WorkationsBD
                 Koll = model.Koll,
                 Summa = model.Summa,
                 Status = ActivityStatus.Принят
-            });
+            };
+            context.Activitys.Add(activity);
             context.SaveChanges();
+
+            var customer = context.Customers.FirstOrDefault(x => x.Id == model.CustomerId);
+            SendEmail(customer.Mail, "Оповещение по заказам",
+                string.Format("Заказ №{0} от {1} создан успешно", activity.Id,
+                activity.DateCreate.ToShortDateString()));
         }
 
         public void TakeActivityInWork(ActivityBindingModel model)
@@ -67,7 +76,7 @@ namespace AbstractWorkService.WorkationsBD
                 try
                 {
 
-                    Activity element = context.Activitys.FirstOrDefault(rec => rec.Id == model.Id);
+                    Activity element = context.Activitys.Include(rec => rec.Customer).FirstOrDefault(rec => rec.Id == model.Id);
                     if (element == null)
                     {
                         throw new Exception("Элемент не найден");
@@ -109,6 +118,8 @@ namespace AbstractWorkService.WorkationsBD
                     element.DateWork = DateTime.Now;
                     element.Status = ActivityStatus.Выполняется;
                     context.SaveChanges();
+                    SendEmail(element.Customer.Mail, "Оповещение по заказам",
+                        string.Format("Заказ №{0} от {1} передеан в работу", element.Id, element.DateCreate.ToShortDateString()));
                     transaction.Commit();
                 }
                 catch (Exception)
@@ -117,28 +128,34 @@ namespace AbstractWorkService.WorkationsBD
                     throw;
                 }
             }
+
         }
 
         public void FinishActivity(int id)
         {
-            Activity element = context.Activitys.FirstOrDefault(rec => rec.Id == id);
+            Activity element = context.Activitys.Include(rec => rec.Customer).FirstOrDefault(rec => rec.Id == id);
             if (element == null)
             {
                 throw new Exception("Элемент не найден");
             }
             element.Status = ActivityStatus.Готов;
             context.SaveChanges();
+            SendEmail(element.Customer.Mail, "Оповещение по заказам",
+                string.Format("Заказ №{0} от {1} передан на оплату", element.Id,
+                element.DateCreate.ToShortDateString()));
         }
 
         public void PayActivity(int id)
         {
-            Activity element = context.Activitys.FirstOrDefault(rec => rec.Id == id);
+            Activity element = context.Activitys.Include(rec => rec.Customer).FirstOrDefault(rec => rec.Id == id);
             if (element == null)
             {
                 throw new Exception("Элемент не найден");
             }
             element.Status = ActivityStatus.Оплачен;
             context.SaveChanges();
+            SendEmail(element.Customer.Mail, "Оповещение по заказам",
+                string.Format("Заказ №{0} от {1} оплачен успешно", element.Id, element.DateCreate.ToShortDateString()));
         }
 
         public void PutMaterialOnSklad(SkladMaterialBindingModel model)
@@ -160,6 +177,40 @@ namespace AbstractWorkService.WorkationsBD
                 });
             }
             context.SaveChanges();
+        }
+
+        private void SendEmail(string mailAddress, string subject, string text)
+        {
+            MailMessage objMailMessage = new MailMessage();
+            SmtpClient objSmtpCustomer = null;
+
+            try
+            {
+                objMailMessage.From = new MailAddress(ConfigurationManager.AppSettings["MailLogin"]);
+                objMailMessage.To.Add(new MailAddress(mailAddress));
+                objMailMessage.Subject = subject;
+                objMailMessage.Body = text;
+                objMailMessage.SubjectEncoding = System.Text.Encoding.UTF8;
+                objMailMessage.BodyEncoding = System.Text.Encoding.UTF8;
+
+                objSmtpCustomer = new SmtpClient("smtp.gmail.com", 587);
+                objSmtpCustomer.UseDefaultCredentials = false;
+                objSmtpCustomer.EnableSsl = true;
+                objSmtpCustomer.DeliveryMethod = SmtpDeliveryMethod.Network;
+                objSmtpCustomer.Credentials = new NetworkCredential(ConfigurationManager.AppSettings["MailLogin"],
+                    ConfigurationManager.AppSettings["MailPassword"]);
+
+                objSmtpCustomer.Send(objMailMessage);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                objMailMessage = null;
+                objSmtpCustomer = null;
+            }
         }
     }
 }

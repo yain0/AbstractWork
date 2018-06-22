@@ -29,6 +29,9 @@ namespace AbstractWorkService
         public virtual DbSet<Sklad> Sklads { get; set; }
 
         public virtual DbSet<SkladMaterial> SkladMaterials { get; set; }
+
+        public virtual DbSet<MessageInfo> MessageInfos { get; set; }
+
         public override int SaveChanges()
         {
             try

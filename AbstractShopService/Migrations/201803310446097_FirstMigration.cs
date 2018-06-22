@@ -1,4 +1,4 @@
-namespace AbstractShopService.Migrations
+namespace AbstractWorkService.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
@@ -8,7 +8,7 @@ namespace AbstractShopService.Migrations
         public override void Up()
         {
             CreateTable(
-                "dbo.Activities",
+                "dbo.Activitys",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -22,7 +22,7 @@ namespace AbstractShopService.Migrations
                         DateWork = c.DateTime(),
                     })
                 .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.Сustomer", t => t.CustomerId, cascadeDelete: true)
+                .ForeignKey("dbo.Сustomers", t => t.CustomerId, cascadeDelete: true)
                 .ForeignKey("dbo.Remonts", t => t.RemontId, cascadeDelete: true)
                 .ForeignKey("dbo.Workers", t => t.WorkerId)
                 .Index(t => t.CustomerId)
@@ -30,7 +30,7 @@ namespace AbstractShopService.Migrations
                 .Index(t => t.WorkerId);
             
             CreateTable(
-                "dbo.Сustomer",
+                "dbo.Сustomers",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -109,28 +109,28 @@ namespace AbstractShopService.Migrations
         
         public override void Down()
         {
-            DropForeignKey("dbo.Activities", "WorkerId", "dbo.Workers");
+            DropForeignKey("dbo.Activitys", "WorkerId", "dbo.Workers");
             DropForeignKey("dbo.RemontMaterials", "RemontId", "dbo.Remonts");
             DropForeignKey("dbo.SkladMaterials", "SkladId", "dbo.Sklads");
             DropForeignKey("dbo.SkladMaterials", "MaterialId", "dbo.Materials");
             DropForeignKey("dbo.RemontMaterials", "MaterialId", "dbo.Materials");
-            DropForeignKey("dbo.Activities", "RemontId", "dbo.Remonts");
-            DropForeignKey("dbo.Activities", "CustomerId", "dbo.Сustomer");
+            DropForeignKey("dbo.Activitys", "RemontId", "dbo.Remonts");
+            DropForeignKey("dbo.Activitys", "CustomerId", "dbo.Сustomers");
             DropIndex("dbo.SkladMaterials", new[] { "MaterialId" });
             DropIndex("dbo.SkladMaterials", new[] { "SkladId" });
             DropIndex("dbo.RemontMaterials", new[] { "MaterialId" });
             DropIndex("dbo.RemontMaterials", new[] { "RemontId" });
-            DropIndex("dbo.Activities", new[] { "WorkerId" });
-            DropIndex("dbo.Activities", new[] { "RemontId" });
-            DropIndex("dbo.Activities", new[] { "CustomerId" });
+            DropIndex("dbo.Activitys", new[] { "WorkerId" });
+            DropIndex("dbo.Activitys", new[] { "RemontId" });
+            DropIndex("dbo.Activitys", new[] { "CustomerId" });
             DropTable("dbo.Workers");
             DropTable("dbo.Sklads");
             DropTable("dbo.SkladMaterials");
             DropTable("dbo.Materials");
             DropTable("dbo.RemontMaterials");
             DropTable("dbo.Remonts");
-            DropTable("dbo.Сustomer");
-            DropTable("dbo.Activities");
+            DropTable("dbo.Сustomers");
+            DropTable("dbo.Activitys");
         }
     }
 }
