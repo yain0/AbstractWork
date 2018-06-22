@@ -94,7 +94,7 @@
             this.comboBoxProduct.Name = "comboBoxProduct";
             this.comboBoxProduct.Size = new System.Drawing.Size(217, 21);
             this.comboBoxProduct.TabIndex = 13;
-            this.comboBoxProduct.SelectedIndexChanged += new System.EventHandler(this.comboBoxProduct_SelectedIndexChanged_1);
+            this.comboBoxProduct.SelectedIndexChanged += new System.EventHandler(this.comboBoxProduct_SelectedIndexChanged);
             // 
             // buttonCancel
             // 
@@ -122,7 +122,7 @@
             this.textBoxCount.Name = "textBoxCount";
             this.textBoxCount.Size = new System.Drawing.Size(217, 20);
             this.textBoxCount.TabIndex = 15;
-            this.textBoxCount.TextChanged += new System.EventHandler(this.textBoxCount_TextChanged_1);
+            this.textBoxCount.TextChanged += new System.EventHandler(this.textBoxCount_TextChanged);
             // 
             // labelProduct
             // 
@@ -150,7 +150,7 @@
             this.Controls.Add(this.labelProduct);
             this.Name = "FormCreateActivity";
             this.Text = "Заказ";
-            this.Load += new System.EventHandler(this.FormCreateActivity_Load_1);
+            this.Load += new System.EventHandler(this.FormCreateActivity_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

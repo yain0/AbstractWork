@@ -30,55 +30,6 @@ namespace AbstractWorkView
 
         private void FormCreateActivity_Load(object sender, EventArgs e)
         {
-            
-        }
-
-        private void CalcSum()
-        {
-            if (comboBoxProduct.SelectedValue != null && !string.IsNullOrEmpty(textBoxCount.Text))
-            {
-                try
-                {
-                    int id = Convert.ToInt32(comboBoxProduct.SelectedValue);
-                    RemontViewModel product = serviceP.GetElement(id);
-                    int count = Convert.ToInt32(textBoxCount.Text);
-                    textBoxSum.Text = (count * (int)product.Cost).ToString();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-        }
-        
-        private void textBoxCount_TextChanged_1(object sender, EventArgs e)
-        {
-            CalcSum();
-        }
-
-        private void textBoxSum_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void comboBoxClient_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void comboBoxProduct_SelectedIndexChanged_1(object sender, EventArgs e)
-        {
-            CalcSum();
-        }
-
-        private void buttonCancel_Click_1(object sender, EventArgs e)
-        {
-            DialogResult = DialogResult.Cancel;
-            Close();
-        }
-
-        private void FormCreateActivity_Load_1(object sender, EventArgs e)
-        {
             try
             {
                 List<CustomerViewModel> listC = serviceC.GetList();
@@ -102,6 +53,55 @@ namespace AbstractWorkView
             {
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void CalcSum()
+        {
+            if (comboBoxProduct.SelectedValue != null && !string.IsNullOrEmpty(textBoxCount.Text))
+            {
+                try
+                {
+                    int id = Convert.ToInt32(comboBoxProduct.SelectedValue);
+                    RemontViewModel product = serviceP.GetElement(id);
+                    int count = Convert.ToInt32(textBoxCount.Text);
+                    textBoxSum.Text = (count * (int)product.Cost).ToString();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void textBoxCount_TextChanged_1(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void textBoxSum_TextChanged(object sender, EventArgs e)
+        {
+          
+        }
+
+        private void comboBoxClient_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void comboBoxProduct_SelectedIndexChanged_1(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void buttonCancel_Click_1(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.Cancel;
+            Close();
+        }
+
+        private void FormCreateActivity_Load_1(object sender, EventArgs e)
+        {
+            
         }
 
         private void buttonSave_Click(object sender, EventArgs e)
@@ -138,6 +138,16 @@ namespace AbstractWorkView
             {
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void comboBoxProduct_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            CalcSum();
+        }
+
+        private void textBoxCount_TextChanged(object sender, EventArgs e)
+        {
+            CalcSum();
         }
     }
 }

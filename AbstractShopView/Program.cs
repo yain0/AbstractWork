@@ -36,7 +36,7 @@ namespace AbstractWorkView
             currentContainer.RegisterType<IRemontService, RemontServiceBD>(new HierarchicalLifetimeManager());
             currentContainer.RegisterType<ISkladService, SkladServiceBD>(new HierarchicalLifetimeManager());
             currentContainer.RegisterType<IMyService, MyServiceBD>(new HierarchicalLifetimeManager());
-
+            currentContainer.RegisterType<IReportService, ReportServiceBD>(new HierarchicalLifetimeManager());
             return currentContainer;
         }
     }
