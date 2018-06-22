@@ -12,5 +12,7 @@
         public int MaterialId { get; set; }
 
         public int Koll { get; set; }
+        public virtual Sklad Sklad { get; set; }
+        public virtual Material Material { get; set; }
     }
 }

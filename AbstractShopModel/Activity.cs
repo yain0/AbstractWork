@@ -24,5 +24,10 @@ namespace AbstractWorkModel
         public DateTime DateCreate { get; set; }
 
         public DateTime? DateWork { get; set; }
+        public virtual Сustomer Customer { get; set; }
+
+        public virtual Remont Remont { get; set; }
+
+        public virtual Worker Worker { get; set; }
     }
 }

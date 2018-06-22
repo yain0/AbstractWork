@@ -34,7 +34,16 @@
       <HintPath>..\packages\Unity.5.7.2\lib\net46\CommonServiceLocator.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -72,6 +81,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AbstractDbContext.cs" />
     <Compile Include="BindingModels\CustomerBindingModel.cs" />
     <Compile Include="BindingModels\MaterialBindingModel.cs" />
     <Compile Include="BindingModels\WorkerBindingModel.cs" />
@@ -81,6 +91,12 @@
     <Compile Include="BindingModels\SkladBindingModel.cs" />
     <Compile Include="BindingModels\SkladMaterialBindingModel.cs" />
     <Compile Include="DataList.cs" />
+    <Compile Include="ImplementationsBD\CustomerServiceBD.cs" />
+    <Compile Include="ImplementationsBD\MaterialServiceBD.cs" />
+    <Compile Include="ImplementationsBD\MyServiceBD.cs" />
+    <Compile Include="ImplementationsBD\RemontServiceBD.cs" />
+    <Compile Include="ImplementationsBD\SkladServiceBD.cs" />
+    <Compile Include="ImplementationsBD\WorkerServiceBD.cs" />
     <Compile Include="ImplementationsList\CustomerServiceList.cs" />
     <Compile Include="ImplementationsList\MaterialServiceList.cs" />
     <Compile Include="ImplementationsList\WorkerServiceList.cs" />
@@ -93,6 +109,11 @@
     <Compile Include="Interfaces\IMyService.cs" />
     <Compile Include="Interfaces\IRemontService.cs" />
     <Compile Include="Interfaces\ISkladService.cs" />
+    <Compile Include="Migrations\201803310446097_FirstMigration.cs" />
+    <Compile Include="Migrations\201803310446097_FirstMigration.Designer.cs">
+      <DependentUpon>201803310446097_FirstMigration.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModels\CustomerViewModel.cs" />
     <Compile Include="ViewModels\MaterialViewModel.cs" />
@@ -110,7 +131,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201803310446097_FirstMigration.resx">
+      <DependentUpon>201803310446097_FirstMigration.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

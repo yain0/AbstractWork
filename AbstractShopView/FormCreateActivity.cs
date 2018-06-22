@@ -42,7 +42,7 @@ namespace AbstractWorkView
                     int id = Convert.ToInt32(comboBoxProduct.SelectedValue);
                     RemontViewModel product = serviceP.GetElement(id);
                     int count = Convert.ToInt32(textBoxCount.Text);
-                    textBoxSum.Text = (count * product.Cost).ToString();
+                    textBoxSum.Text = (count * (int)product.Cost).ToString();
                 }
                 catch (Exception ex)
                 {

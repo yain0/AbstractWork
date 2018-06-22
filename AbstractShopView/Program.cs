@@ -1,6 +1,10 @@
-﻿using AbstractWorkService.ImplementationsList;
+﻿using AbstractWorkService;
+using AbstractWorkService.ImplementationsBD;
+using AbstractWorkService.ImplementationsList;
 using AbstractWorkService.Interfaces;
+using AbstractWorkService.WorkationsBD;
 using System;
+using System.Data.Entity;
 using System.Windows.Forms;
 using Unity;
 using Unity.Lifetime;
@@ -25,13 +29,14 @@ namespace AbstractWorkView
         public static IUnityContainer BuildUnityContainer()
         {
             var currentContainer = new UnityContainer();
-            currentContainer.RegisterType<ICustomerService, CustomerServiceList>(new HierarchicalLifetimeManager());
-            currentContainer.RegisterType<IMaterialService, MaterialServiceList>(new HierarchicalLifetimeManager());
-            currentContainer.RegisterType<IWorkerService, WorkerServiceList>(new HierarchicalLifetimeManager());
-            currentContainer.RegisterType<IRemontService, RemontServiceList>(new HierarchicalLifetimeManager());
-            currentContainer.RegisterType<ISkladService, SkladServiceList>(new HierarchicalLifetimeManager());
-            currentContainer.RegisterType<IMyService, MyServiceList>(new HierarchicalLifetimeManager());
-            
+            currentContainer.RegisterType<DbContext, AbstractDbContext>(new HierarchicalLifetimeManager());
+            currentContainer.RegisterType<ICustomerService, CustomerServiceBD>(new HierarchicalLifetimeManager());
+            currentContainer.RegisterType<IMaterialService, MaterialServiceBD>(new HierarchicalLifetimeManager());
+            currentContainer.RegisterType<IWorkerService, WorkerServiceBD>(new HierarchicalLifetimeManager());
+            currentContainer.RegisterType<IRemontService, RemontServiceBD>(new HierarchicalLifetimeManager());
+            currentContainer.RegisterType<ISkladService, SkladServiceBD>(new HierarchicalLifetimeManager());
+            currentContainer.RegisterType<IMyService, MyServiceBD>(new HierarchicalLifetimeManager());
+
             return currentContainer;
         }
     }

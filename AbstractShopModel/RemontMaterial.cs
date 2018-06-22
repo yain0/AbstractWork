@@ -12,5 +12,7 @@
         public int MaterialId { get; set; }
 
         public int Koll { get; set; }
+        public virtual Remont Remont { get; set; }
+        public virtual Material Material { get; set; }
     }
 }
