@@ -1,4 +1,5 @@
-﻿using AbstractWorkService.BindingModels;
+﻿using AbstractWorkRestApi.Services;
+using AbstractWorkService.BindingModels;
 using AbstractWorkService.Interfaces;
 using System;
 using System.Web.Http;
@@ -53,6 +54,17 @@ namespace AbstractWorkRestApi.Controllers
         public void PutMaterialOnSklad(SkladMaterialBindingModel model)
         {
             _service.PutMaterialOnSklad(model);
+        }
+        [HttpGet]
+        public IHttpActionResult GetInfo()
+        {
+            ReflectionService service = new ReflectionService();
+            var list = service.GetInfoByAssembly();
+            if (list == null)
+            {
+                InternalServerError(new Exception("Нет данных"));
+            }
+            return Ok(list);
         }
     }
 }
