@@ -24,11 +24,6 @@ namespace AbstractWorkView
             InitializeComponent();
         }
 
-        private void FormTakeActivityInWork_Load(object sender, EventArgs e)
-        {
-           
-        }
-
         private void buttonSave_Click_1(object sender, EventArgs e)
         {
             if (comboBoxImplementer.SelectedValue == null)
@@ -38,31 +33,39 @@ namespace AbstractWorkView
             }
             try
             {
-                var response = APICustomer.PostRequest("api/My/TakeActivityInWork", new ActivityBindingModel
+                int implementerId = Convert.ToInt32(comboBoxImplementer.SelectedValue);
+                Task task = Task.Run(() => APICustomer.PostRequestData("api/My/TakeActivityInWork", new ActivityBindingModel
                 {
                     Id = id.Value,
-                    WorkerId = Convert.ToInt32(comboBoxImplementer.SelectedValue)
-                });
-                if (response.Result.IsSuccessStatusCode)
+                    WorkerId = implementerId
+                }));
+
+                task.ContinueWith((prevTask) => MessageBox.Show("Заказ передан в работу. Обновите список", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information),
+                    TaskContinuationOptions.OnlyOnRanToCompletion);
+                task.ContinueWith((prevTask) =>
                 {
-                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    DialogResult = DialogResult.OK;
-                    Close();
-                }
-                else
-                {
-                    throw new Exception(APICustomer.GetError(response));
-                }
+                    var ex = (Exception)prevTask.Exception;
+                    while (ex.InnerException != null)
+                    {
+                        ex = ex.InnerException;
+                    }
+                    MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }, TaskContinuationOptions.OnlyOnFaulted);
+
+                Close();
             }
             catch (Exception ex)
             {
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void buttonCancel_Click_1(object sender, EventArgs e)
+            private void buttonCancel_Click_1(object sender, EventArgs e)
         {
-            DialogResult = DialogResult.Cancel;
             Close();
         }
 
@@ -85,25 +88,21 @@ namespace AbstractWorkView
                     MessageBox.Show("Не указан заказ", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Close();
                 }
-                var response = APICustomer.GetRequest("api/Implementer/GetList");
-                if (response.Result.IsSuccessStatusCode)
+                List<WorkerViewModel> list = Task.Run(() => APICustomer.GetRequestData<List<WorkerViewModel>>("api/Worker/GetList")).Result;
+                if (list != null)
                 {
-                    List<WorkerViewModel> list = APICustomer.GetElement<List<WorkerViewModel>>(response);
-                    if (list != null)
-                    {
-                        comboBoxImplementer.DisplayMember = "WorkerFIO";
-                        comboBoxImplementer.ValueMember = "Id";
-                        comboBoxImplementer.DataSource = list;
-                        comboBoxImplementer.SelectedItem = null;
-                    }
-                }
-                else
-                {
-                    throw new Exception(APICustomer.GetError(response));
+                    comboBoxImplementer.DisplayMember = "WorkerFIO";
+                    comboBoxImplementer.ValueMember = "Id";
+                    comboBoxImplementer.DataSource = list;
+                    comboBoxImplementer.SelectedItem = null;
                 }
             }
             catch (Exception ex)
             {
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

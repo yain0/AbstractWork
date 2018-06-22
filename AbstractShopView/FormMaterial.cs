@@ -19,11 +19,6 @@ namespace AbstractWorkView
             InitializeComponent();
         }
 
-        private void FormMaterial_Load(object sender, EventArgs e)
-        {
-            
-        }
-
         private void buttonSave_Click_1(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(textBoxName.Text))
@@ -31,44 +26,41 @@ namespace AbstractWorkView
                 MessageBox.Show("Заполните название", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            try
+            string name = textBoxName.Text;
+            Task task;
+            if (id.HasValue)
             {
-                Task<HttpResponseMessage> response;
-                if (id.HasValue)
+                task = Task.Run(() => APICustomer.PostRequestData("api/Material/UpdElement", new MaterialBindingModel
                 {
-                    response = APICustomer.PostRequest("api/Material/UpdElement", new MaterialBindingModel
-                    {
-                        Id = id.Value,
-                        MaterialName = textBoxName.Text
-                    });
-                }
-                else
-                {
-                    response = APICustomer.PostRequest("api/Material/AddElement", new MaterialBindingModel
-                    {
-                        MaterialName = textBoxName.Text
-                    });
-                }
-                if (response.Result.IsSuccessStatusCode)
-                {
-                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    DialogResult = DialogResult.OK;
-                    Close();
-                }
-                else
-                {
-                    throw new Exception(APICustomer.GetError(response));
-                }
+                    Id = id.Value,
+                    MaterialName = name
+                }));
             }
-            catch (Exception ex)
+            else
             {
+                task = Task.Run(() => APICustomer.PostRequestData("api/Material/AddElement", new MaterialBindingModel
+                {
+                    MaterialName = name
+                }));
+            }
+
+            task.ContinueWith((prevTask) => MessageBox.Show("Сохранение прошло успешно. Обновите список", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information),
+                TaskContinuationOptions.OnlyOnRanToCompletion);
+            task.ContinueWith((prevTask) =>
+            {
+                var ex = (Exception)prevTask.Exception;
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            }, TaskContinuationOptions.OnlyOnFaulted);
+
+            Close();
         }
 
         private void buttonCancel_Click_1(object sender, EventArgs e)
         {
-            DialogResult = DialogResult.Cancel;
             Close();
         }
 
@@ -78,19 +70,15 @@ namespace AbstractWorkView
             {
                 try
                 {
-                    var response = APICustomer.GetRequest("api/Material/Get/" + id.Value);
-                    if (response.Result.IsSuccessStatusCode)
-                    {
-                        var component = APICustomer.GetElement<MaterialViewModel>(response);
-                        textBoxName.Text = component.MaterialName;
-                    }
-                    else
-                    {
-                        throw new Exception(APICustomer.GetError(response));
-                    }
+                    var component = Task.Run(() => APICustomer.GetRequestData<MaterialViewModel>("api/Material/Get/" + id.Value)).Result;
+                    textBoxName.Text = component.MaterialName;
                 }
                 catch (Exception ex)
                 {
+                    while (ex.InnerException != null)
+                    {
+                        ex = ex.InnerException;
+                    }
                     MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }

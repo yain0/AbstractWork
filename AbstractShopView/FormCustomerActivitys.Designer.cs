@@ -114,7 +114,7 @@
             this.reportViewer1.ServerReport.BearerToken = null;
             this.reportViewer1.Size = new System.Drawing.Size(887, 521);
             this.reportViewer1.TabIndex = 2;
-            this.reportViewer1.Load += new System.EventHandler(this.reportViewer1_Load);
+    //        this.reportViewer1.Load += new System.EventHandler(this.reportViewer1_Load);
             // 
             // FormCustomerActivitys
             // 
@@ -125,7 +125,7 @@
             this.Controls.Add(this.panel);
             this.Name = "FormCustomerActivitys";
             this.Text = "FormCustomerActivitys";
-            this.Load += new System.EventHandler(this.FormCustomerActivitys_Load);
+  //          this.Load += new System.EventHandler(this.FormCustomerActivitys_Load);
             this.panel.ResumeLayout(false);
             this.panel.PerformLayout();
             this.ResumeLayout(false);

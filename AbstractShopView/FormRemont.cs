@@ -27,22 +27,18 @@ namespace AbstractWorkView
             {
                 try
                 {
-                    var response = APICustomer.GetRequest("api/Remont/Get/" + id.Value);
-                    if (response.Result.IsSuccessStatusCode)
-                    {
-                        var product = APICustomer.GetElement<RemontViewModel>(response);
-                        textBoxName.Text = product.RemontName;
-                        textBoxPrice.Text = product.Cost.ToString();
-                        productComponents = product.RemontMaterials;
-                        LoadData();
-                    }
-                    else
-                    {
-                        throw new Exception(APICustomer.GetError(response));
-                    }
+                    var product = Task.Run(() => APICustomer.GetRequestData<RemontViewModel>("api/Remont/Get/" + id.Value)).Result;
+                    textBoxName.Text = product.RemontName;
+                    textBoxPrice.Text = product.Cost.ToString();
+                    productComponents = product.RemontMaterials;
+                    LoadData();
                 }
                 catch (Exception ex)
                 {
+                    while (ex.InnerException != null)
+                    {
+                        ex = ex.InnerException;
+                    }
                     MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
@@ -77,9 +73,9 @@ namespace AbstractWorkView
             var form = new FormRemontMaterial();
             if (form.ShowDialog() == DialogResult.OK)
             {
-                if(form.Model != null)
+                if (form.Model != null)
                 {
-                    if(id.HasValue)
+                    if (id.HasValue)
                     {
                         form.Model.RemontId = id.Value;
                     }
@@ -144,59 +140,57 @@ namespace AbstractWorkView
                 MessageBox.Show("Заполните компоненты", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            try
+            List<RemontMaterialBindingModel> productComponentBM = new List<RemontMaterialBindingModel>();
+            for (int i = 0; i < productComponents.Count; ++i)
             {
-                List<RemontMaterialBindingModel> productComponentBM = new List<RemontMaterialBindingModel>();
-                for (int i = 0; i < productComponents.Count; ++i)
+                productComponentBM.Add(new RemontMaterialBindingModel
                 {
-                    productComponentBM.Add(new RemontMaterialBindingModel
-                    {
-                        Id = productComponents[i].Id,
-                        RemontId = productComponents[i].RemontId,
-                        MaterialId = productComponents[i].MaterialId,
-                        Koll = productComponents[i].Koll
-                    });
-                }
-                Task<HttpResponseMessage> response;
-                if (id.HasValue)
-                {
-                    response = APICustomer.PostRequest("api/Remont/UpdElement", new RemontBindingModel
-                    {
-                        Id = id.Value,
-                        RemontName = textBoxName.Text,
-                        Cost = Convert.ToInt32(textBoxPrice.Text),
-                        RemontMaterials = productComponentBM
-                    });
-                }
-                else
-                {
-                    response = APICustomer.PostRequest("api/Remont/AddElement", new RemontBindingModel
-                    {
-                        RemontName = textBoxName.Text,
-                        Cost = Convert.ToInt32(textBoxPrice.Text),
-                        RemontMaterials = productComponentBM
-                    });
-                }
-                if (response.Result.IsSuccessStatusCode)
-                {
-                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    DialogResult = DialogResult.OK;
-                    Close();
-                }
-                else
-                {
-                    throw new Exception(APICustomer.GetError(response));
-                }
+                    Id = productComponents[i].Id,
+                    RemontId = productComponents[i].RemontId,
+                    MaterialId = productComponents[i].MaterialId,
+                    Koll = productComponents[i].Koll
+                });
             }
-            catch (Exception ex)
+            string name = textBoxName.Text;
+            int price = Convert.ToInt32(textBoxPrice.Text);
+            Task task;
+            if (id.HasValue)
             {
+                task = Task.Run(() => APICustomer.PostRequestData("api/Remont/UpdElement", new RemontBindingModel
+                {
+                    Id = id.Value,
+                    RemontName = name,
+                    Cost = price,
+                    RemontMaterials = productComponentBM
+                }));
+            }
+            else
+            {
+                task = Task.Run(() => APICustomer.PostRequestData("api/Remont/AddElement", new RemontBindingModel
+                {
+                    RemontName = name,
+                    Cost = price,
+                    RemontMaterials = productComponentBM
+                }));
+            }
+
+            task.ContinueWith((prevTask) => MessageBox.Show("Сохранение прошло успешно. Обновите список", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information),
+                TaskContinuationOptions.OnlyOnRanToCompletion);
+            task.ContinueWith((prevTask) =>
+            {
+                var ex = (Exception)prevTask.Exception;
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            }, TaskContinuationOptions.OnlyOnFaulted);
+
+            Close();
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)
         {
-            DialogResult = DialogResult.Cancel;
             Close();
         }
 

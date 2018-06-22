@@ -2,6 +2,7 @@
 using AbstractWorkService.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace AbstractWorkView
@@ -21,21 +22,17 @@ namespace AbstractWorkView
         {
             try
             {
-                var response = APICustomer.GetRequest("api/Material/GetList");
-                if (response.Result.IsSuccessStatusCode)
-                {
-                    comboBoxComponent.DisplayMember = "MaterialName";
-                    comboBoxComponent.ValueMember = "Id";
-                    comboBoxComponent.DataSource = APICustomer.GetElement<List<MaterialViewModel>>(response);
-                    comboBoxComponent.SelectedItem = null;
-                }
-                else
-                {
-                    throw new Exception(APICustomer.GetError(response));
-                }
+                comboBoxComponent.DisplayMember = "MaterialName";
+                comboBoxComponent.ValueMember = "Id";
+                comboBoxComponent.DataSource = Task.Run(() => APICustomer.GetRequestData<List<MaterialViewModel>>("api/Material/GetList")).Result;
+                comboBoxComponent.SelectedItem = null;
             }
             catch (Exception ex)
             {
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             if (model != null)

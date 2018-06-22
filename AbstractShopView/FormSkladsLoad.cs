@@ -33,25 +33,23 @@ namespace AbstractWorkView
             };
             if (sfd.ShowDialog() == DialogResult.OK)
             {
-                try
+                string fileName = sfd.FileName;
+                Task task = Task.Run(() => APICustomer.PostRequestData("api/Report/SaveSkladsLoad", new ReportBindingModel
                 {
-                    var response = APICustomer.PostRequest("api/Report/SaveSkladsLoad", new ReportBindingModel
-                    {
-                        FileName = sfd.FileName
-                    });
-                    if (response.Result.IsSuccessStatusCode)
-                    {
-                        MessageBox.Show("Выполнено", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        throw new Exception(APICustomer.GetError(response));
-                    }
-                }
-                catch (Exception ex)
+                    FileName = fileName
+                }));
+
+                task.ContinueWith((prevTask) => MessageBox.Show("Выполнено", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information),
+                    TaskContinuationOptions.OnlyOnRanToCompletion);
+                task.ContinueWith((prevTask) =>
                 {
+                    var ex = (Exception)prevTask.Exception;
+                    while (ex.InnerException != null)
+                    {
+                        ex = ex.InnerException;
+                    }
                     MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                }, TaskContinuationOptions.OnlyOnFaulted);
             }
         }
 
@@ -59,28 +57,24 @@ namespace AbstractWorkView
         {
             try
             {
-                var response = APICustomer.GetRequest("api/Report/GetSkladsLoad");
-                if (response.Result.IsSuccessStatusCode)
+                dataGridView.Rows.Clear();
+                foreach (var elem in Task.Run(() => APICustomer.GetRequestData<List<SkladsLoadViewModel>>("api/Report/GetSkladsLoad")).Result)
                 {
-                    dataGridView.Rows.Clear();
-                    foreach (var elem in APICustomer.GetElement<List<SkladsLoadViewModel>>(response))
+                    dataGridView.Rows.Add(new object[] { elem.SkladName, "", "" });
+                    foreach (var listElem in elem.Materials)
                     {
-                        dataGridView.Rows.Add(new object[] { elem.SkladName, "", "" });
-                        foreach (var listElem in elem.Materials)
-                        {
-                            dataGridView.Rows.Add(new object[] { "", listElem.MaterialName, listElem.Koll });
-                        }
-                        dataGridView.Rows.Add(new object[] { "Итого", "", elem.TotalKoll });
-                        dataGridView.Rows.Add(new object[] { });
+                        dataGridView.Rows.Add(new object[] { "", listElem.MaterialName, listElem.Koll });
                     }
-                }
-                else
-                {
-                    throw new Exception(APICustomer.GetError(response));
+                    dataGridView.Rows.Add(new object[] { "Итого", "", elem.TotalKoll });
+                    dataGridView.Rows.Add(new object[] { });
                 }
             }
             catch (Exception ex)
             {
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

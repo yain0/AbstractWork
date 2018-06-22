@@ -36,44 +36,40 @@ namespace AbstractWorkView
                 MessageBox.Show("Заполните ФИО", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            try
+            string fio = textBoxFIO.Text;
+            Task task;
+            if (id.HasValue)
             {
-                Task<HttpResponseMessage> response;
-                if (id.HasValue)
+                task = Task.Run(() => APICustomer.PostRequestData("api/Customer/UpdElement", new CustomerBindingModel
                 {
-                    response = APICustomer.PostRequest("api/Customer/UpdElement", new CustomerBindingModel
-                    {
-                        Id = id.Value,
-                        CustomerFIO = textBoxFIO.Text
-                    });
-                }
-                else
-                {
-                    response = APICustomer.PostRequest("api/Customer/AddElement", new CustomerBindingModel
-                    {
-                        CustomerFIO = textBoxFIO.Text
-                    });
-                }
-                if (response.Result.IsSuccessStatusCode)
-                {
-                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    DialogResult = DialogResult.OK;
-                    Close();
-                }
-                else
-                {
-                    throw new Exception(APICustomer.GetError(response));
-                }
+                    Id = id.Value,
+                    CustomerFIO = fio
+                }));
             }
-            catch (Exception ex)
+            else
             {
-                MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                task = Task.Run(() => APICustomer.PostRequestData("api/Customer/AddElement", new CustomerBindingModel
+                {
+                    CustomerFIO = fio
+                }));
             }
-        }
 
-        private void buttonCancel_Click_1(object sender, EventArgs e)
+            task.ContinueWith((prevTask) => MessageBox.Show("Сохранение прошло успешно. Обновите список", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information),
+                    TaskContinuationOptions.OnlyOnRanToCompletion);
+            task.ContinueWith((prevTask) =>
+            {
+                var ex = (Exception)prevTask.Exception;
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
+                MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }, TaskContinuationOptions.OnlyOnFaulted);
+
+            Close();
+        }
+            private void buttonCancel_Click_1(object sender, EventArgs e)
         {
-            DialogResult = DialogResult.Cancel;
             Close();
         }
 
@@ -83,19 +79,15 @@ namespace AbstractWorkView
             {
                 try
                 {
-                    var response = APICustomer.GetRequest("api/Customer/Get/" + id.Value);
-                    if (response.Result.IsSuccessStatusCode)
-                    {
-                        var client = APICustomer.GetElement<CustomerViewModel>(response);
-                        textBoxFIO.Text = client.CustomerFIO;
-                    }
-                    else
-                    {
-                        throw new Exception(APICustomer.GetError(response));
-                    }
+                    var client = Task.Run(() => APICustomer.GetRequestData<CustomerViewModel>("api/Customer/Get/" + id.Value)).Result;
+                    textBoxFIO.Text = client.CustomerFIO;
                 }
                 catch (Exception ex)
                 {
+                    while (ex.InnerException != null)
+                                            {
+                        ex = ex.InnerException;
+                                            }
                     MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }

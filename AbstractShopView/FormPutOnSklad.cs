@@ -2,6 +2,7 @@
 using AbstractWorkService.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace AbstractWorkView
@@ -32,32 +33,42 @@ namespace AbstractWorkView
             }
             try
             {
-                var response = APICustomer.PostRequest("api/Main/PutMaterialOnSklad", new SkladMaterialBindingModel
+                int componentId = Convert.ToInt32(comboBoxComponent.SelectedValue);
+                int stockId = Convert.ToInt32(comboBoxStock.SelectedValue);
+                int count = Convert.ToInt32(textBoxCount.Text);
+                Task task = Task.Run(() => APICustomer.PostRequestData("api/My/PutMaterialOnSklad", new SkladMaterialBindingModel
                 {
-                    MaterialId = Convert.ToInt32(comboBoxComponent.SelectedValue),
-                    SkladId = Convert.ToInt32(comboBoxStock.SelectedValue),
-                    Koll = Convert.ToInt32(textBoxCount.Text)
-                });
-                if (response.Result.IsSuccessStatusCode)
+                    MaterialId = componentId,
+                    SkladId = stockId,
+                    Koll = count
+                }));
+
+                task.ContinueWith((prevTask) => MessageBox.Show("Склад пополнен", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information),
+                    TaskContinuationOptions.OnlyOnRanToCompletion);
+                task.ContinueWith((prevTask) =>
                 {
-                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    DialogResult = DialogResult.OK;
-                    Close();
-                }
-                else
-                {
-                    throw new Exception(APICustomer.GetError(response));
-                }
+                    var ex = (Exception)prevTask.Exception;
+                    while (ex.InnerException != null)
+                    {
+                        ex = ex.InnerException;
+                    }
+                    MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }, TaskContinuationOptions.OnlyOnFaulted);
+
+                Close();
             }
             catch (Exception ex)
             {
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void buttonCancel_Click_1(object sender, EventArgs e)
         {
-            DialogResult = DialogResult.Cancel;
             Close();
         }
 
@@ -70,44 +81,32 @@ namespace AbstractWorkView
         {
             try
             {
-                var responseC = APICustomer.GetRequest("api/Material/GetList");
-                if (responseC.Result.IsSuccessStatusCode)
+                List<MaterialViewModel> listC = Task.Run(() => APICustomer.GetRequestData<List<MaterialViewModel>>("api/Material/GetList")).Result;
+                if (listC != null)
                 {
-                    List<MaterialViewModel> list = APICustomer.GetElement<List<MaterialViewModel>>(responseC);
-                    if (list != null)
-                    {
-                        comboBoxComponent.DisplayMember = "MaterialName";
-                        comboBoxComponent.ValueMember = "Id";
-                        comboBoxComponent.DataSource = list;
-                        comboBoxComponent.SelectedItem = null;
-                    }
+                    comboBoxComponent.DisplayMember = "MaterialName";
+                    comboBoxComponent.ValueMember = "Id";
+                    comboBoxComponent.DataSource = listC;
+                    comboBoxComponent.SelectedItem = null;
                 }
-                else
+
+                List<SkladViewModel> listS = Task.Run(() => APICustomer.GetRequestData<List<SkladViewModel>>("api/Sklad/GetList")).Result;
+                if (listS != null)
                 {
-                    throw new Exception(APICustomer.GetError(responseC));
-                }
-                var responseS = APICustomer.GetRequest("api/Sklad/GetList");
-                if (responseS.Result.IsSuccessStatusCode)
-                {
-                    List<SkladViewModel> list = APICustomer.GetElement<List<SkladViewModel>>(responseS);
-                    if (list != null)
-                    {
-                        comboBoxStock.DisplayMember = "SkladName";
-                        comboBoxStock.ValueMember = "Id";
-                        comboBoxStock.DataSource = list;
-                        comboBoxStock.SelectedItem = null;
-                    }
-                }
-                else
-                {
-                    throw new Exception(APICustomer.GetError(responseC));
+                    comboBoxStock.DisplayMember = "SkladName";
+                    comboBoxStock.ValueMember = "Id";
+                    comboBoxStock.DataSource = listS;
+                    comboBoxStock.SelectedItem = null;
                 }
             }
             catch (Exception ex)
             {
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            
         }
     }
 }
