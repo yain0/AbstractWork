@@ -4,6 +4,7 @@ using AbstractWorkService.Interfaces;
 using AbstractWorkService.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AbstractWorkService.ImplementationsList
 {
@@ -18,48 +19,38 @@ namespace AbstractWorkService.ImplementationsList
 
         public List<MaterialViewModel> GetList()
         {
-            List<MaterialViewModel> result = new List<MaterialViewModel>();
-            for (int i = 0; i < source.Material.Count; ++i)
-            {
-                result.Add(new MaterialViewModel
+            List<MaterialViewModel> result = source.Material
+                .Select(rec => new MaterialViewModel
                 {
-                    Id = source.Material[i].Id,
-                    MaterialName = source.Material[i].MaterialName
-                });
-            }
+                    Id = rec.Id,
+                    MaterialName = rec.MaterialName
+                })
+                  .ToList(); 
             return result;
         }
 
         public MaterialViewModel GetElement(int id)
         {
-            for (int i = 0; i < source.Material.Count; ++i)
+            Material element = source.Material.FirstOrDefault(rec => rec.Id == id);
+            if (element != null)
             {
-                if (source.Material[i].Id == id)
+                return new MaterialViewModel
                 {
-                    return new MaterialViewModel
-                    {
-                        Id = source.Material[i].Id,
-                        MaterialName = source.Material[i].MaterialName
+                        Id = element.Id,
+                        MaterialName = element.MaterialName
                     };
-                }
             }
             throw new Exception("Элемент не найден");
         }
 
         public void AddElement(MaterialBindingModel model)
         {
-            int maxId = 0;
-            for (int i = 0; i < source.Material.Count; ++i)
+            Material element = source.Material.FirstOrDefault(rec => rec.MaterialName == model.MaterialName);
+            if (element != null)
             {
-                if (source.Material[i].Id > maxId)
-                {
-                    maxId = source.Material[i].Id;
-                }
-                if (source.Material[i].MaterialName == model.MaterialName)
-                {
                     throw new Exception("Уже есть компонент с таким названием");
-                }
             }
+            int maxId = source.Material.Count > 0 ? source.Material.Max(rec => rec.Id) : 0;
             source.Material.Add(new Material
             {
                 Id = maxId + 1,
@@ -69,37 +60,31 @@ namespace AbstractWorkService.ImplementationsList
 
         public void UpdElement(MaterialBindingModel model)
         {
-            int index = -1;
-            for (int i = 0; i < source.Material.Count; ++i)
+            Material element = source.Material.FirstOrDefault(rec =>
+rec.MaterialName == model.MaterialName && rec.Id != model.Id);
+            if (element != null)
             {
-                if (source.Material[i].Id == model.Id)
-                {
-                    index = i;
-                }
-                if (source.Material[i].MaterialName == model.MaterialName && 
-                    source.Material[i].Id != model.Id)
-                {
                     throw new Exception("Уже есть компонент с таким названием");
-                }
             }
-            if (index == -1)
+            element = source.Material.FirstOrDefault(rec => rec.Id == model.Id);
+            if (element == null)
             {
                 throw new Exception("Элемент не найден");
             }
-            source.Material[index].MaterialName = model.MaterialName;
+            element.MaterialName = model.MaterialName;
         }
 
         public void DelElement(int id)
         {
-            for (int i = 0; i < source.Material.Count; ++i)
+            Material element = source.Material.FirstOrDefault(rec => rec.Id == id);
+            if (element != null)
             {
-                if (source.Material[i].Id == id)
-                {
-                    source.Material.RemoveAt(i);
-                    return;
-                }
+                source.Material.Remove(element);
             }
-            throw new Exception("Элемент не найден");
+            else
+            {
+                throw new Exception("Элемент не найден");
+            }  
         }
     }
 }

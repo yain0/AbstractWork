@@ -4,6 +4,7 @@ using AbstractWorkService.Interfaces;
 using AbstractWorkService.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AbstractWorkService.ImplementationsList
 {
@@ -18,48 +19,38 @@ namespace AbstractWorkService.ImplementationsList
 
         public List<WorkerViewModel> GetList()
         {
-            List<WorkerViewModel> result = new List<WorkerViewModel>();
-            for (int i = 0; i < source.Worker.Count; ++i)
-            {
-                result.Add(new WorkerViewModel
-                {
-                    Id = source.Worker[i].Id,
-                    WorkerFIO = source.Worker[i].WorkerFIO
-                });
-            }
+            List<WorkerViewModel> result = source.Worker
+               .Select(rec => new WorkerViewModel
+               {
+                   Id = rec.Id,
+                   WorkerFIO = rec.WorkerFIO
+               })
+                .ToList();
             return result;
         }
 
         public WorkerViewModel GetElement(int id)
         {
-            for (int i = 0; i < source.Worker.Count; ++i)
+            Worker element = source.Worker.FirstOrDefault(rec => rec.Id == id);
+            if (element != null)
             {
-                if (source.Worker[i].Id == id)
-                {
                     return new WorkerViewModel
                     {
-                        Id = source.Worker[i].Id,
-                        WorkerFIO = source.Worker[i].WorkerFIO
+                        Id = element.Id,
+                        WorkerFIO = element.WorkerFIO
                     };
                 }
-            }
             throw new Exception("Элемент не найден");
         }
 
         public void AddElement(WorkerBindingModel model)
         {
-            int maxId = 0;
-            for (int i = 0; i < source.Worker.Count; ++i)
+            Worker element = source.Worker.FirstOrDefault(rec => rec.WorkerFIO == model.WorkerFIO);
+            if (element != null)
             {
-                if (source.Worker[i].Id > maxId)
-                {
-                    maxId = source.Worker[i].Id;
-                }
-                if (source.Worker[i].WorkerFIO == model.WorkerFIO)
-                {
                     throw new Exception("Уже есть сотрудник с таким ФИО");
-                }
             }
+            int maxId = source.Worker.Count > 0 ? source.Worker.Max(rec => rec.Id) : 0;
             source.Worker.Add(new Worker
             {
                 Id = maxId + 1,
@@ -69,37 +60,31 @@ namespace AbstractWorkService.ImplementationsList
 
         public void UpdElement(WorkerBindingModel model)
         {
-            int index = -1;
-            for (int i = 0; i < source.Worker.Count; ++i)
+            Worker element = source.Worker.FirstOrDefault(rec =>
+rec.WorkerFIO == model.WorkerFIO && rec.Id != model.Id);
+            if (element != null)
             {
-                if (source.Worker[i].Id == model.Id)
-                {
-                    index = i;
-                }
-                if (source.Worker[i].WorkerFIO == model.WorkerFIO && 
-                    source.Worker[i].Id != model.Id)
-                {
                     throw new Exception("Уже есть сотрудник с таким ФИО");
-                }
             }
-            if (index == -1)
+            element = source.Worker.FirstOrDefault(rec => rec.Id == model.Id);
+            if (element == null)
             {
                 throw new Exception("Элемент не найден");
             }
-            source.Worker[index].WorkerFIO = model.WorkerFIO;
+            element.WorkerFIO = model.WorkerFIO;
         }
 
         public void DelElement(int id)
         {
-            for (int i = 0; i < source.Worker.Count; ++i)
+            Worker element = source.Worker.FirstOrDefault(rec => rec.Id == id);
+            if (element != null)
             {
-                if (source.Worker[i].Id == id)
-                {
-                    source.Worker.RemoveAt(i);
-                    return;
-                }
+                source.Worker.Remove(element);
             }
-            throw new Exception("Элемент не найден");
+            else
+            {
+                throw new Exception("Элемент не найден");
+            }
         }
     }
 }

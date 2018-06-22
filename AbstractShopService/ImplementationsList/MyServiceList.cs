@@ -4,6 +4,7 @@ using AbstractWorkService.Interfaces;
 using AbstractWorkService.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AbstractWorkService.ImplementationsList
 {
@@ -18,68 +19,32 @@ namespace AbstractWorkService.ImplementationsList
 
         public List<ActivityViewModel> GetList()
         {
-            List<ActivityViewModel> result = new List<ActivityViewModel>();
-            for (int i = 0; i < source.Activity.Count; ++i)
-            {
-                string customerFIO = string.Empty;
-                for (int j = 0; j < source.Customer.Count; ++j)
+            List<ActivityViewModel> result = source.Activity
+                .Select(rec => new ActivityViewModel
                 {
-                    if(source.Customer[j].Id == source.Activity[i].CustomerId)
-                    {
-                        customerFIO = source.Customer[j].CustomerFIO;
-                        break;
-                    }
-                }
-                string RemontName = string.Empty;
-                for (int j = 0; j < source.Remont.Count; ++j)
-                {
-                    if (source.Remont[j].Id == source.Activity[i].RemontId)
-                    {
-                        RemontName = source.Remont[j].RemontName;
-                        break;
-                    }
-                }
-                string WorkerFIO = string.Empty;
-                if(source.Activity[i].WorkerId.HasValue)
-                {
-                    for (int j = 0; j < source.Worker.Count; ++j)
-                    {
-                        if (source.Worker[j].Id == source.Activity[i].WorkerId.Value)
-                        {
-                            WorkerFIO = source.Worker[j].WorkerFIO;
-                            break;
-                        }
-                    }
-                }
-                result.Add(new ActivityViewModel
-                {
-                    Id = source.Activity[i].Id,
-                    CustomerId = source.Activity[i].CustomerId,
-                    CustomerFIO = customerFIO,
-                    RemontId = source.Activity[i].RemontId,
-                    RemontName = RemontName,
-                    WorkerId = source.Activity[i].WorkerId,
-                    WorkerName = WorkerFIO,
-                    Koll = source.Activity[i].Koll,
-                    Summa = source.Activity[i].Summa,
-                    DateCreate = source.Activity[i].DateCreate.ToLongDateString(),
-                    DateWork = source.Activity[i].DateWork?.ToLongDateString(),
-                    Status = source.Activity[i].Status.ToString()
-                });
-            }
+                    Id = rec.Id,
+                    CustomerId = rec.CustomerId,
+                    RemontId = rec.RemontId,
+                    WorkerId = rec.WorkerId,
+                    DateCreate = rec.DateCreate.ToLongDateString(),
+                    DateWork = rec.DateWork?.ToLongDateString(),
+                    Status = rec.Status.ToString(),
+                    Koll = rec.Koll,
+                    Summa = rec.Summa,
+                    CustomerFIO = source.Customer
+                                    .FirstOrDefault(recC => recC.Id == rec.CustomerId)?.CustomerFIO,
+                    RemontName = source.Remont
+                                    .FirstOrDefault(recP => recP.Id == rec.RemontId)?.RemontName,
+                    WorkerName = source.Worker
+                                    .FirstOrDefault(recI => recI.Id == rec.WorkerId)?.WorkerFIO
+                })
+                .ToList();
             return result;
         }
 
         public void CreateActivity(ActivityBindingModel model)
         {
-            int maxId = 0;
-            for (int i = 0; i < source.Activity.Count; ++i)
-            {
-                if (source.Activity[i].Id > maxId)
-                {
-                    maxId = source.Customer[i].Id;
-                }
-            }
+            int maxId = source.Activity.Count > 0 ? source.Activity.Max(rec => rec.Id) : 0;
             source.Activity.Add(new Activity
             {
                 Id = maxId + 1,
@@ -94,136 +59,92 @@ namespace AbstractWorkService.ImplementationsList
 
         public void TakeActivityInWork(ActivityBindingModel model)
         {
-            int index = -1;
-            for (int i = 0; i < source.Activity.Count; ++i)
-            {
-                if (source.Activity[i].Id == model.Id)
-                {
-                    index = i;
-                    break;
-                }
-            }
-            if (index == -1)
+            Activity element = source.Activity.FirstOrDefault(rec => rec.Id == model.Id);
+            if (element == null)
             {
                 throw new Exception("Элемент не найден");
             }
             // смотрим по количеству компонентов на складах
-            for(int i = 0; i < source.RemontMaterial.Count; ++i)
+            var remontMaterials = source.RemontMaterial.Where(rec => rec.RemontId == element.RemontId);
+            foreach (var remontMaterial in remontMaterials)
             {
-                if(source.RemontMaterial[i].RemontId == source.Activity[index].RemontId)
+                int countOnSklads = source.SkladMaterial
+                                            .Where(rec => rec.MaterialId == remontMaterial.MaterialId)
+                                            .Sum(rec => rec.Koll);
+                if (countOnSklads < remontMaterial.Koll * element.Koll)
                 {
-                    int KollOnSklads = 0;
-                    for(int j = 0; j < source.SkladMaterial.Count; ++j)
-                    {
-                        if(source.SkladMaterial[j].MaterialId == source.RemontMaterial[i].MaterialId)
-                        {
-                            KollOnSklads += source.SkladMaterial[j].Koll;
-                        }
-                    }
-                    if(KollOnSklads < source.RemontMaterial[i].Koll * source.Activity[index].Koll)
-                    {
-                        for (int j = 0; j < source.Material.Count; ++j)
-                        {
-                            if (source.Material[j].Id == source.RemontMaterial[i].MaterialId)
-                            {
-                                throw new Exception("Не достаточно компонента " + source.Material[j].MaterialName + 
-                                    " требуется " + source.RemontMaterial[i].Koll + ", в наличии " + KollOnSklads);
-                            }
-                        }
-                    }
+                    var materialName = source.Material
+                                     .FirstOrDefault(rec => rec.Id == remontMaterial.MaterialId);
+                    throw new Exception("Не достаточно компонента " + materialName?.MaterialName +
+" требуется " + remontMaterial.Koll + ", в наличии " + countOnSklads);
                 }
             }
             // списываем
-            for (int i = 0; i < source.RemontMaterial.Count; ++i)
+            foreach (var remontMaterial in remontMaterials)
             {
-                if (source.RemontMaterial[i].RemontId == source.Activity[index].RemontId)
+                int countOnSklads = remontMaterial.Koll * element.Koll;
+                var skladMaterials = source.SkladMaterial
+                                            .Where(rec => rec.MaterialId == remontMaterial.MaterialId);
+                foreach (var skladMaterial in skladMaterials)
                 {
-                    int KollOnSklads = source.RemontMaterial[i].Koll * source.Activity[index].Koll;
-                    for (int j = 0; j < source.SkladMaterial.Count; ++j)
+                    // компонентов на одном слкаде может не хватать
+                    if (skladMaterial.Koll >= countOnSklads)
                     {
-                        if (source.SkladMaterial[j].MaterialId == source.RemontMaterial[i].MaterialId)
-                        {
-                            // компонентов на одном слкаде может не хватать
-                            if (source.SkladMaterial[j].Koll >= KollOnSklads)
-                            {
-                                source.SkladMaterial[j].Koll -= KollOnSklads;
-                                break;
-                            }
-                            else
-                            {
-                                KollOnSklads -= source.SkladMaterial[j].Koll;
-                                source.SkladMaterial[j].Koll = 0;
-                            }
-                        }
+                        skladMaterial.Koll -= countOnSklads;
+                        break;
+                    }
+                    else
+                    {
+                        countOnSklads -= skladMaterial.Koll;
+                        skladMaterial.Koll = 0;
                     }
                 }
             }
-            source.Activity[index].WorkerId = model.WorkerId;
-            source.Activity[index].DateWork = DateTime.Now;
-            source.Activity[index].Status = ActivityStatus.Выполняется;
+            element.WorkerId = model.WorkerId;
+            element.DateWork = DateTime.Now;
+            element.Status = ActivityStatus.Выполняется;
         }
 
         public void FinishActivity(int id)
         {
-            int index = -1;
-            for (int i = 0; i < source.Activity.Count; ++i)
-            {
-                if (source.Customer[i].Id == id)
-                {
-                    index = i;
-                    break;
-                }
-            }
-            if (index == -1)
+            Activity element = source.Activity.FirstOrDefault(rec => rec.Id == id);
+            if (element == null)
             {
                 throw new Exception("Элемент не найден");
             }
-            source.Activity[index].Status = ActivityStatus.Готов;
+            element.Status = ActivityStatus.Готов;
         }
 
         public void PayActivity(int id)
         {
-            int index = -1;
-            for (int i = 0; i < source.Activity.Count; ++i)
-            {
-                if (source.Customer[i].Id == id)
-                {
-                    index = i;
-                    break;
-                }
-            }
-            if (index == -1)
+            Activity element = source.Activity.FirstOrDefault(rec => rec.Id == id);
+            if (element == null)
             {
                 throw new Exception("Элемент не найден");
             }
-            source.Activity[index].Status = ActivityStatus.Оплачен;
+            element.Status = ActivityStatus.Оплачен;
         }
 
         public void PutMaterialOnSklad(SkladMaterialBindingModel model)
         {
-            int maxId = 0;
-            for (int i = 0; i < source.SkladMaterial.Count; ++i)
+            SkladMaterial element = source.SkladMaterial
+                                                .FirstOrDefault(rec => rec.SkladId == model.SkladId &&
+rec.MaterialId == model.MaterialId);
+            if (element != null)
             {
-                if(source.SkladMaterial[i].SkladId == model.SkladId && 
-                    source.SkladMaterial[i].MaterialId == model.MaterialId)
-                {
-                    source.SkladMaterial[i].Koll += model.Koll;
-                    return;
-                }
-                if (source.SkladMaterial[i].Id > maxId)
-                {
-                    maxId = source.SkladMaterial[i].Id;
-                }
+                element.Koll += model.Koll;
             }
-            source.SkladMaterial.Add(new SkladMaterial
+            else
             {
-                Id = ++maxId,
-                SkladId = model.SkladId,
-                MaterialId = model.MaterialId,
-                Koll = model.Koll
-            });
+                int maxId = source.SkladMaterial.Count > 0 ? source.SkladMaterial.Max(rec => rec.Id) : 0;
+                source.SkladMaterial.Add(new SkladMaterial
+                {
+                    Id = ++maxId,
+                    SkladId = model.SkladId,
+                    MaterialId = model.MaterialId,
+                    Koll = model.Koll
+                });
+            }
         }
-
-        
     }
 }
