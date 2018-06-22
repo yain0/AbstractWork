@@ -3,39 +3,35 @@ using AbstractWorkService.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractWorkView
 {
     public partial class FormRemontMaterial : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
         public RemontMaterialViewModel Model { set { model = value; }  get { return model; } }
-
-        private readonly IMaterialService service;
-
+        
         private RemontMaterialViewModel model;
 
-        public FormRemontMaterial(IMaterialService service)
+        public FormRemontMaterial()
         {
             InitializeComponent();
-            this.service = service;
         }
 
         private void FormRemontMaterial_Load(object sender, EventArgs e)
         {
             try
             {
-                List<MaterialViewModel> list = service.GetList();
-                if (list != null)
+                var response = APICustomer.GetRequest("api/Material/GetList");
+                if (response.Result.IsSuccessStatusCode)
                 {
                     comboBoxComponent.DisplayMember = "MaterialName";
                     comboBoxComponent.ValueMember = "Id";
-                    comboBoxComponent.DataSource = list;
+                    comboBoxComponent.DataSource = APICustomer.GetElement<List<MaterialViewModel>>(response);
                     comboBoxComponent.SelectedItem = null;
+                }
+                else
+                {
+                    throw new Exception(APICustomer.GetError(response));
                 }
             }
             catch (Exception ex)

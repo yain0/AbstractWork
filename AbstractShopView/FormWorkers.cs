@@ -1,4 +1,5 @@
-﻿using AbstractWorkService.Interfaces;
+﻿using AbstractWorkService.BindingModels;
+using AbstractWorkService.Interfaces;
 using AbstractWorkService.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -9,22 +10,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractWorkView
 {
     public partial class FormWorkers : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
-        private readonly IWorkerService service;
-
-        public FormWorkers(IWorkerService service)
+        public FormWorkers()
         {
             InitializeComponent();
-            this.service = service;
         }
 
         private void FormWorkers_Load(object sender, EventArgs e)
@@ -36,12 +29,20 @@ namespace AbstractWorkView
         {
             try
             {
-                List<WorkerViewModel> list = service.GetList();
-                if (list != null)
+                var response = APICustomer.GetRequest("api/Worker/GetList");
+                if (response.Result.IsSuccessStatusCode)
                 {
-                    dataGridView.DataSource = list;
-                    dataGridView.Columns[0].Visible = false;
-                    dataGridView.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    List<WorkerViewModel> list = APICustomer.GetElement<List<WorkerViewModel>>(response);
+                    if (list != null)
+                    {
+                        dataGridView.DataSource = list;
+                        dataGridView.Columns[0].Visible = false;
+                        dataGridView.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    }
+                }
+                else
+                {
+                    throw new Exception(APICustomer.GetError(response));
                 }
             }
             catch (Exception ex)
@@ -51,7 +52,7 @@ namespace AbstractWorkView
         }
         private void buttonAdd_Click_1(object sender, EventArgs e)
         {
-            var form = Container.Resolve<FormWorker>();
+            var form = new FormWorker();
             if (form.ShowDialog() == DialogResult.OK)
             {
                 LoadData();
@@ -62,7 +63,7 @@ namespace AbstractWorkView
         {
             if (dataGridView.SelectedRows.Count == 1)
             {
-                var form = Container.Resolve<FormWorker>();
+                var form = new FormWorker();
                 form.Id = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value);
                 if (form.ShowDialog() == DialogResult.OK)
                 {
@@ -80,7 +81,11 @@ namespace AbstractWorkView
                     int id = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value);
                     try
                     {
-                        service.DelElement(id);
+                        var response = APICustomer.PostRequest("api/Worker/DelElement", new CustomerBindingModel { Id = id });
+                        if (!response.Result.IsSuccessStatusCode)
+                        {
+                            throw new Exception(APICustomer.GetError(response));
+                        }
                     }
                     catch (Exception ex)
                     {

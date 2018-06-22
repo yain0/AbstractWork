@@ -2,27 +2,21 @@
 using AbstractWorkService.Interfaces;
 using AbstractWorkService.ViewModels;
 using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractWorkView
 {
     public partial class FormMaterial : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
         public int Id { set { id = value; } }
-
-        private readonly IMaterialService service;
-
+        
         private int? id;
 
-        public FormMaterial(IMaterialService service)
+        public FormMaterial()
         {
             InitializeComponent();
-            this.service = service;
         }
 
         private void FormMaterial_Load(object sender, EventArgs e)
@@ -39,9 +33,10 @@ namespace AbstractWorkView
             }
             try
             {
+                Task<HttpResponseMessage> response;
                 if (id.HasValue)
                 {
-                    service.UpdElement(new MaterialBindingModel
+                    response = APICustomer.PostRequest("api/Material/UpdElement", new MaterialBindingModel
                     {
                         Id = id.Value,
                         MaterialName = textBoxName.Text
@@ -49,14 +44,21 @@ namespace AbstractWorkView
                 }
                 else
                 {
-                    service.AddElement(new MaterialBindingModel
+                    response = APICustomer.PostRequest("api/Material/AddElement", new MaterialBindingModel
                     {
                         MaterialName = textBoxName.Text
                     });
                 }
-                MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                DialogResult = DialogResult.OK;
-                Close();
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    DialogResult = DialogResult.OK;
+                    Close();
+                }
+                else
+                {
+                    throw new Exception(APICustomer.GetError(response));
+                }
             }
             catch (Exception ex)
             {
@@ -76,10 +78,15 @@ namespace AbstractWorkView
             {
                 try
                 {
-                    MaterialViewModel view = service.GetElement(id.Value);
-                    if (view != null)
+                    var response = APICustomer.GetRequest("api/Material/Get/" + id.Value);
+                    if (response.Result.IsSuccessStatusCode)
                     {
-                        textBoxName.Text = view.MaterialName;
+                        var component = APICustomer.GetElement<MaterialViewModel>(response);
+                        textBoxName.Text = component.MaterialName;
+                    }
+                    else
+                    {
+                        throw new Exception(APICustomer.GetError(response));
                     }
                 }
                 catch (Exception ex)

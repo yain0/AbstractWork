@@ -1,52 +1,55 @@
 ﻿using AbstractWorkService.BindingModels;
-using AbstractWorkService.Interfaces;
 using AbstractWorkService.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractWorkView
 {
     public partial class FormCreateActivity : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
+        
 
-        private readonly ICustomerService serviceC;
-
-        private readonly IRemontService serviceP;
-
-        private readonly IMyService serviceM;
-
-        public FormCreateActivity(ICustomerService serviceC, IRemontService serviceP, IMyService serviceM)
+        public FormCreateActivity()
         {
             InitializeComponent();
-            this.serviceC = serviceC;
-            this.serviceP = serviceP;
-            this.serviceM = serviceM;
         }
 
         private void FormCreateActivity_Load(object sender, EventArgs e)
         {
             try
             {
-                List<CustomerViewModel> listC = serviceC.GetList();
-                if (listC != null)
+                var responseC = APICustomer.GetRequest("api/Customer/GetList");
+                if (responseC.Result.IsSuccessStatusCode)
                 {
-                    comboBoxClient.DisplayMember = "CustomerFIO";
-                    comboBoxClient.ValueMember = "Id";
-                    comboBoxClient.DataSource = listC;
-                    comboBoxClient.SelectedItem = null;
+                    List<CustomerViewModel> list = APICustomer.GetElement<List<CustomerViewModel>>(responseC);
+                    if (list != null)
+                    {
+                        comboBoxClient.DisplayMember = "CustomerFIO";
+                        comboBoxClient.ValueMember = "Id";
+                        comboBoxClient.DataSource = list;
+                        comboBoxClient.SelectedItem = null;
+                    }
                 }
-                List<RemontViewModel> listP = serviceP.GetList();
-                if (listP != null)
+                else
                 {
-                    comboBoxProduct.DisplayMember = "RemontName";
-                    comboBoxProduct.ValueMember = "Id";
-                    comboBoxProduct.DataSource = listP;
-                    comboBoxProduct.SelectedItem = null;
+                    throw new Exception(APICustomer.GetError(responseC));
+                }
+                var responseP = APICustomer.GetRequest("api/Remont/GetList");
+                if (responseP.Result.IsSuccessStatusCode)
+                {
+                    List<RemontViewModel> list = APICustomer.GetElement<List<RemontViewModel>>(responseP);
+                    if (list != null)
+                    {
+                        comboBoxProduct.DisplayMember = "RemontName";
+                        comboBoxProduct.ValueMember = "Id";
+                        comboBoxProduct.DataSource = list;
+                        comboBoxProduct.SelectedItem = null;
+                    }
+                }
+                else
+                {
+                    throw new Exception(APICustomer.GetError(responseP));
                 }
             }
             catch (Exception ex)
@@ -62,9 +65,17 @@ namespace AbstractWorkView
                 try
                 {
                     int id = Convert.ToInt32(comboBoxProduct.SelectedValue);
-                    RemontViewModel product = serviceP.GetElement(id);
-                    int count = Convert.ToInt32(textBoxCount.Text);
-                    textBoxSum.Text = (count * (int)product.Cost).ToString();
+                    var responseP = APICustomer.GetRequest("api/Remont/Get/" + id);
+                    if (responseP.Result.IsSuccessStatusCode)
+                    {
+                        RemontViewModel product = APICustomer.GetElement<RemontViewModel>(responseP);
+                        int count = Convert.ToInt32(textBoxCount.Text);
+                        textBoxSum.Text = (count * (int)product.Cost).ToString();
+                    }
+                    else
+                    {
+                        throw new Exception(APICustomer.GetError(responseP));
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -123,16 +134,23 @@ namespace AbstractWorkView
             }
             try
             {
-                serviceM.CreateActivity(new ActivityBindingModel
+                var response = APICustomer.PostRequest("api/My/CreateActivity", new ActivityBindingModel
                 {
                     CustomerId = Convert.ToInt32(comboBoxClient.SelectedValue),
                     RemontId = Convert.ToInt32(comboBoxProduct.SelectedValue),
                     Koll = Convert.ToInt32(textBoxCount.Text),
-                    Summa = Convert.ToInt32(textBoxSum.Text)
+                    Summa = Convert.ToDecimal(textBoxSum.Text)
                 });
-                MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                DialogResult = DialogResult.OK;
-                Close();
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    DialogResult = DialogResult.OK;
+                    Close();
+                }
+                else
+                {
+                    throw new Exception(APICustomer.GetError(response));
+                }
             }
             catch (Exception ex)
             {

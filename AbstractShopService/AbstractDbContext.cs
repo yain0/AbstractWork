@@ -1,13 +1,11 @@
 ﻿using AbstractWorkModel;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 
 namespace AbstractWorkService
 {
-    [Table("AbstractDatabase")]
     public class AbstractDbContext : DbContext
     {
-        public AbstractDbContext()
+        public AbstractDbContext() : base("AbstractDatabase")
         {
             //настройки конфигурации для entity
             Configuration.ProxyCreationEnabled = false;

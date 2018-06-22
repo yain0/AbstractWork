@@ -26,7 +26,7 @@ namespace AbstractWorkService.ImplementationsBD
                     Id = rec.Id,
                     RemontName = rec.RemontName,
                     Cost = rec.Cost,
-                    RemontMaterial = context.RemontMaterials
+                    RemontMaterials = context.RemontMaterials
                             .Where(recPC => recPC.RemontId == rec.Id)
                             .Select(recPC => new RemontMaterialViewModel
                             {
@@ -52,7 +52,7 @@ namespace AbstractWorkService.ImplementationsBD
                     Id = element.Id,
                     RemontName = element.RemontName,
                     Cost = element.Cost,
-                    RemontMaterial = context.RemontMaterials
+                    RemontMaterials = context.RemontMaterials
                             .Where(recPC => recPC.RemontId == element.Id)
                             .Select(recPC => new RemontMaterialViewModel
                             {
@@ -87,7 +87,7 @@ namespace AbstractWorkService.ImplementationsBD
                     context.Remonts.Add(element);
                     context.SaveChanges();
                     // убираем дубли по компонентам
-                    var groupMaterials = model.RemontMaterial
+                    var groupMaterials = model.RemontMaterials
                                                 .GroupBy(rec => rec.MaterialId)
                                                 .Select(rec => new
                                                 {
@@ -137,13 +137,13 @@ namespace AbstractWorkService.ImplementationsBD
                     context.SaveChanges();
 
                     // обновляем существуюущие компоненты
-                    var compIds = model.RemontMaterial.Select(rec => rec.MaterialId).Distinct();
+                    var compIds = model.RemontMaterials.Select(rec => rec.MaterialId).Distinct();
                     var updateMaterials = context.RemontMaterials
                                                     .Where(rec => rec.RemontId == model.Id &&
                                                         compIds.Contains(rec.MaterialId));
                     foreach (var updateMaterial in updateMaterials)
                     {
-                        updateMaterial.Koll = model.RemontMaterial
+                        updateMaterial.Koll = model.RemontMaterials
                                                         .FirstOrDefault(rec => rec.Id == updateMaterial.Id).Koll;
                     }
                     context.SaveChanges();
@@ -152,7 +152,7 @@ namespace AbstractWorkService.ImplementationsBD
                                                                             !compIds.Contains(rec.MaterialId)));
                     context.SaveChanges();
                     // новые записи
-                    var groupMaterials = model.RemontMaterial
+                    var groupMaterials = model.RemontMaterials
                                                 .Where(rec => rec.Id == 0)
                                                 .GroupBy(rec => rec.MaterialId)
                                                 .Select(rec => new

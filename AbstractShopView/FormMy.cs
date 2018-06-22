@@ -4,41 +4,38 @@ using AbstractWorkService.BindingModels;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
 using AbstractwWorkService.BindingModels;
 
 namespace AbstractWorkView
 {
     public partial class FormMy : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
-        private readonly IMyService service;
-
-        private readonly IReportService reportService;
-
-        public FormMy(IMyService service, IReportService reportService)
+        public FormMy()
         {
             InitializeComponent();
-            this.service = service;
-            this.reportService = reportService;
         }
 
         private void LoadData()
         {
             try
             {
-                List<ActivityViewModel> list = service.GetList();
-                if (list != null)
+                var response = APICustomer.GetRequest("api/My/GetList");
+                if (response.Result.IsSuccessStatusCode)
                 {
-                    dataGridView.DataSource = list;
-                    dataGridView.Columns[0].Visible = false;
-                    dataGridView.Columns[1].Visible = false;
-                    dataGridView.Columns[3].Visible = false;
-                    dataGridView.Columns[5].Visible = false;
-                    dataGridView.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    List<ActivityViewModel> list = APICustomer.GetElement<List<ActivityViewModel>>(response);
+                    if (list != null)
+                    {
+                        dataGridView.DataSource = list;
+                        dataGridView.Columns[0].Visible = false;
+                        dataGridView.Columns[1].Visible = false;
+                        dataGridView.Columns[3].Visible = false;
+                        dataGridView.Columns[5].Visible = false;
+                        dataGridView.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    }
+                }
+                else
+                {
+                    throw new Exception(APICustomer.GetError(response));
                 }
             }
             catch (Exception ex)
@@ -49,7 +46,7 @@ namespace AbstractWorkView
 
         private void buttonCreateOrder_Click_1(object sender, EventArgs e)
         {
-            var form = Container.Resolve<FormCreateActivity>();
+            var form = new FormCreateActivity();
             form.ShowDialog();
             LoadData();
         }
@@ -58,8 +55,10 @@ namespace AbstractWorkView
         {
             if (dataGridView.SelectedRows.Count == 1)
             {
-                var form = Container.Resolve<FormTakeActivityInWork>();
-                form.Id = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value);
+                var form = new FormTakeActivityInWork
+                {
+                    Id = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value)
+                };
                 form.ShowDialog();
                 LoadData();
             }
@@ -72,8 +71,18 @@ namespace AbstractWorkView
                 int id = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value);
                 try
                 {
-                    service.FinishActivity(id);
-                    LoadData();
+                    var response = APICustomer.PostRequest("api/My/FinishActivity", new ActivityBindingModel
+                    {
+                        Id = id
+                    });
+                    if (response.Result.IsSuccessStatusCode)
+                    {
+                        LoadData();
+                    }
+                    else
+                    {
+                        throw new Exception(APICustomer.GetError(response));
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -89,8 +98,18 @@ namespace AbstractWorkView
                 int id = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value);
                 try
                 {
-                    service.PayActivity(id);
-                    LoadData();
+                    var response = APICustomer.PostRequest("api/My/.PayActivity", new ActivityBindingModel
+                    {
+                        Id = id
+                    });
+                    if (response.Result.IsSuccessStatusCode)
+                    {
+                        LoadData();
+                    }
+                    else
+                    {
+                        throw new Exception(APICustomer.GetError(response));
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -106,37 +125,37 @@ namespace AbstractWorkView
 
         private void клиентыToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
-            var form = Container.Resolve<FormCustomers>();
+            var form = new FormCustomers();
             form.ShowDialog();
         }
 
         private void компонентыToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
-            var form = Container.Resolve<FormMaterials>();
+            var form = new FormMaterials();
             form.ShowDialog();
         }
 
         private void изделияToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
-            var form = Container.Resolve<FormRemonts>();
+            var form = new FormRemonts();
             form.ShowDialog();
         }
 
         private void складыToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
-            var form = Container.Resolve<FormSklads>();
+            var form = new FormSklads();
             form.ShowDialog();
         }
 
         private void сотрудникиToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
-            var form = Container.Resolve<FormWorkers>();
+            var form = new FormWorkers();
             form.ShowDialog();
         }
 
         private void пополнитьСкладToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
-            var form = Container.Resolve<FormPutOnSklad>();
+            var form = new FormPutOnSklad();
             form.ShowDialog();
         }
 
@@ -170,11 +189,18 @@ namespace AbstractWorkView
             {
                 try
                 {
-                    reportService.SaveRemontCost(new ReportBindingModel
+                    var response = APICustomer.PostRequest("api/Report/SaveRemontCost", new ReportBindingModel
                     {
                         FileName = sfd.FileName
                     });
-                    MessageBox.Show("Выполнено", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    if (response.Result.IsSuccessStatusCode)
+                    {
+                        MessageBox.Show("Выполнено", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        throw new Exception(APICustomer.GetError(response));
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -185,13 +211,13 @@ namespace AbstractWorkView
 
         private void загруженностьСкладовToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var form = Container.Resolve<FormSkladLoad>();
+            var form = new FormSkladsLoad();
             form.ShowDialog();
         }
 
         private void заказыКлиентовToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var form = Container.Resolve<FormCustomerActivitys>();
+            var form = new FormCustomerActivitys();
             form.ShowDialog();
         }
     }

@@ -115,7 +115,7 @@ winword.Documents.Add(ref missing, ref missing, ref missing, ref missing);
                 winword.Quit();
             }
         }
-        public List<SkladLoadViewModel> GetSkladsLoad()
+        public List<SkladsLoadViewModel> GetSkladsLoad()
         {
             return context.Sklads
                             .ToList()
@@ -126,11 +126,11 @@ winword.Documents.Add(ref missing, ref missing, ref missing, ref missing);
                                     stock => stock,
                                     stockComponent => stockComponent.Sklad,
                                     (stock, stockCompList) =>
-            new SkladLoadViewModel
+            new SkladsLoadViewModel
             {
                 SkladName = stock.SkladName,
                 TotalKoll = stockCompList.Sum(r => r.Koll),
-                Materials = stockCompList.Select(r => new Tuple<string, int>(r.Material.MaterialName, r.Koll))
+                Materials = stockCompList.Select(r => new SkladsMaterialLoadViewModel { MaterialName = r.Material.MaterialName, Koll = r.Koll }).ToList()
             })
                             .ToList();
         }
@@ -217,9 +217,9 @@ excelcells.get_Offset(elem.Materials.Count() - 1, 1));
 
                             foreach (var listElem in elem.Materials)
                             {
-                                excelcells.Value2 = listElem.Item1;
+                                excelcells.Value2 = listElem.MaterialName;
                                 excelcells.ColumnWidth = 10;
-                                excelcells.get_Offset(0, 1).Value2 = listElem.Item2;
+                                excelcells.get_Offset(0, 1).Value2 = listElem.Koll;
                                 excelcells = excelcells.get_Offset(1, 0);
                             }
                         }
@@ -245,13 +245,13 @@ excelcells.get_Offset(elem.Materials.Count() - 1, 1));
             }
         }
 
-        public List<CustomerActivityModel> GetCustomerActivitys(ReportBindingModel model)
+        public List<CustomerActivitysModel> GetCustomerActivitys(ReportBindingModel model)
         {
             return context.Activitys
                             .Include(rec => rec.Customer)
                             .Include(rec => rec.Remont)
                            .Where(rec => rec.DateCreate >= model.DateFrom && rec.DateCreate <= model.DateTo)
-                            .Select(rec => new CustomerActivityModel
+                            .Select(rec => new CustomerActivitysModel
                             {
                                 CustomerName = rec.Customer.CustomerFIO,
                                 DateCreate = SqlFunctions.DateName("dd", rec.DateCreate) + " " +

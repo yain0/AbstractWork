@@ -1,6 +1,6 @@
 ﻿namespace AbstractWorkView
 {
-    partial class FormSkladLoad
+    partial class FormSkladsLoad
     {
         /// <summary>
         /// Required designer variable.

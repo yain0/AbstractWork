@@ -3,29 +3,22 @@ using AbstractWorkService.Interfaces;
 using AbstractWorkService.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractWorkView
 {
     public partial class FormRemont : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
         public int Id { set { id = value; } }
-
-        private readonly IRemontService service;
-
         private int? id;
 
         private List<RemontMaterialViewModel> productComponents;
 
-        public FormRemont(IRemontService service)
+        public FormRemont()
         {
             InitializeComponent();
-            this.service = service;
         }
 
         private void FormProduct_Load(object sender, EventArgs e)
@@ -34,13 +27,18 @@ namespace AbstractWorkView
             {
                 try
                 {
-                    RemontViewModel view = service.GetElement(id.Value);
-                    if (view != null)
+                    var response = APICustomer.GetRequest("api/Remont/Get/" + id.Value);
+                    if (response.Result.IsSuccessStatusCode)
                     {
-                        textBoxName.Text = view.RemontName;
-                        textBoxPrice.Text = view.Cost.ToString();
-                        productComponents = view.RemontMaterial;
+                        var product = APICustomer.GetElement<RemontViewModel>(response);
+                        textBoxName.Text = product.RemontName;
+                        textBoxPrice.Text = product.Cost.ToString();
+                        productComponents = product.RemontMaterials;
                         LoadData();
+                    }
+                    else
+                    {
+                        throw new Exception(APICustomer.GetError(response));
                     }
                 }
                 catch (Exception ex)
@@ -76,7 +74,7 @@ namespace AbstractWorkView
 
         private void buttonAdd_Click(object sender, EventArgs e)
         {
-            var form = Container.Resolve<FormRemontMaterial>();
+            var form = new FormRemontMaterial();
             if (form.ShowDialog() == DialogResult.OK)
             {
                 if(form.Model != null)
@@ -95,7 +93,7 @@ namespace AbstractWorkView
         {
             if (dataGridView.SelectedRows.Count == 1)
             {
-                var form = Container.Resolve<FormRemontMaterial>();
+                var form = new FormRemontMaterial();
                 form.Model = productComponents[dataGridView.SelectedRows[0].Cells[0].RowIndex];
                 if (form.ShowDialog() == DialogResult.OK)
                 {
@@ -159,28 +157,36 @@ namespace AbstractWorkView
                         Koll = productComponents[i].Koll
                     });
                 }
+                Task<HttpResponseMessage> response;
                 if (id.HasValue)
                 {
-                    service.UpdElement(new RemontBindingModel
+                    response = APICustomer.PostRequest("api/Remont/UpdElement", new RemontBindingModel
                     {
                         Id = id.Value,
                         RemontName = textBoxName.Text,
                         Cost = Convert.ToInt32(textBoxPrice.Text),
-                        RemontMaterial = productComponentBM
+                        RemontMaterials = productComponentBM
                     });
                 }
                 else
                 {
-                    service.AddElement(new RemontBindingModel
+                    response = APICustomer.PostRequest("api/Remont/AddElement", new RemontBindingModel
                     {
                         RemontName = textBoxName.Text,
                         Cost = Convert.ToInt32(textBoxPrice.Text),
-                        RemontMaterial = productComponentBM
+                        RemontMaterials = productComponentBM
                     });
                 }
-                MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                DialogResult = DialogResult.OK;
-                Close();
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    DialogResult = DialogResult.OK;
+                    Close();
+                }
+                else
+                {
+                    throw new Exception(APICustomer.GetError(response));
+                }
             }
             catch (Exception ex)
             {

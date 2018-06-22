@@ -13,11 +13,11 @@ namespace AbstractWorkService.Interfaces
     {
         void SaveRemontCost(ReportBindingModel model);
 
-        List<SkladLoadViewModel> GetSkladsLoad();
+        List<SkladsLoadViewModel> GetSkladsLoad();
 
         void SaveSkladsLoad(ReportBindingModel model);
 
-        List<CustomerActivityModel> GetCustomerActivitys(ReportBindingModel model);
+        List<CustomerActivitysModel> GetCustomerActivitys(ReportBindingModel model);
 
         void SaveCustomerActivitys(ReportBindingModel model);
     }

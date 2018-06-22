@@ -2,27 +2,21 @@
 using AbstractWorkService.Interfaces;
 using AbstractWorkService.ViewModels;
 using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractWorkView
 {
     public partial class FormSklad : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
         public int Id { set { id = value; } }
-
-        private readonly ISkladService service;
-
+        
         private int? id;
 
-        public FormSklad(ISkladService service)
+        public FormSklad()
         {
             InitializeComponent();
-            this.service = service;
         }
 
         private void FormSklad_Load(object sender, EventArgs e)
@@ -39,9 +33,10 @@ namespace AbstractWorkView
             }
             try
             {
+                Task<HttpResponseMessage> response;
                 if (id.HasValue)
                 {
-                    service.UpdElement(new SkladBindingModel
+                    response = APICustomer.PostRequest("api/Sklad/UpdElement", new SkladBindingModel
                     {
                         Id = id.Value,
                         SkladName = textBoxName.Text
@@ -49,14 +44,21 @@ namespace AbstractWorkView
                 }
                 else
                 {
-                    service.AddElement(new SkladBindingModel
+                    response = APICustomer.PostRequest("api/Sklad/AddElement", new SkladBindingModel
                     {
                         SkladName = textBoxName.Text
                     });
                 }
-                MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                DialogResult = DialogResult.OK;
-                Close();
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    DialogResult = DialogResult.OK;
+                    Close();
+                }
+                else
+                {
+                    throw new Exception(APICustomer.GetError(response));
+                }
             }
             catch (Exception ex)
             {
@@ -76,15 +78,20 @@ namespace AbstractWorkView
             {
                 try
                 {
-                    SkladViewModel view = service.GetElement(id.Value);
-                    if (view != null)
+                    var response = APICustomer.GetRequest("api/Sklad/Get/" + id.Value);
+                    if (response.Result.IsSuccessStatusCode)
                     {
-                        textBoxName.Text = view.SkladName;
-                        dataGridView.DataSource = view.SkladMaterial;
+                        var stock = APICustomer.GetElement<SkladViewModel>(response);
+                        textBoxName.Text = stock.SkladName;
+                        dataGridView.DataSource = stock.SkladMaterials;
                         dataGridView.Columns[0].Visible = false;
                         dataGridView.Columns[1].Visible = false;
                         dataGridView.Columns[2].Visible = false;
                         dataGridView.Columns[3].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    }
+                    else
+                    {
+                        throw new Exception(APICustomer.GetError(response));
                     }
                 }
                 catch (Exception ex)

@@ -10,29 +10,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractWorkView
 {
     public partial class FormTakeActivityInWork : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
         public int Id { set { id = value; } }
-
-        private readonly IWorkerService serviceI;
-
-        private readonly IMyService serviceM;
-
+        
         private int? id;
 
-        public FormTakeActivityInWork(IWorkerService serviceI, IMyService serviceM)
+        public FormTakeActivityInWork()
         {
             InitializeComponent();
-            this.serviceI = serviceI;
-            this.serviceM = serviceM;
         }
 
         private void FormTakeActivityInWork_Load(object sender, EventArgs e)
@@ -49,14 +38,21 @@ namespace AbstractWorkView
             }
             try
             {
-                serviceM.TakeActivityInWork(new ActivityBindingModel
+                var response = APICustomer.PostRequest("api/My/TakeActivityInWork", new ActivityBindingModel
                 {
                     Id = id.Value,
                     WorkerId = Convert.ToInt32(comboBoxImplementer.SelectedValue)
                 });
-                MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                DialogResult = DialogResult.OK;
-                Close();
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    DialogResult = DialogResult.OK;
+                    Close();
+                }
+                else
+                {
+                    throw new Exception(APICustomer.GetError(response));
+                }
             }
             catch (Exception ex)
             {
@@ -89,13 +85,21 @@ namespace AbstractWorkView
                     MessageBox.Show("Не указан заказ", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Close();
                 }
-                List<WorkerViewModel> listI = serviceI.GetList();
-                if (listI != null)
+                var response = APICustomer.GetRequest("api/Implementer/GetList");
+                if (response.Result.IsSuccessStatusCode)
                 {
-                    comboBoxImplementer.DisplayMember = "WorkerFIO";
-                    comboBoxImplementer.ValueMember = "Id";
-                    comboBoxImplementer.DataSource = listI;
-                    comboBoxImplementer.SelectedItem = null;
+                    List<WorkerViewModel> list = APICustomer.GetElement<List<WorkerViewModel>>(response);
+                    if (list != null)
+                    {
+                        comboBoxImplementer.DisplayMember = "WorkerFIO";
+                        comboBoxImplementer.ValueMember = "Id";
+                        comboBoxImplementer.DataSource = list;
+                        comboBoxImplementer.SelectedItem = null;
+                    }
+                }
+                else
+                {
+                    throw new Exception(APICustomer.GetError(response));
                 }
             }
             catch (Exception ex)

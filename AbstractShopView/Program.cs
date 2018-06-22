@@ -6,8 +6,6 @@ using AbstractWorkService.WorkationsBD;
 using System;
 using System.Data.Entity;
 using System.Windows.Forms;
-using Unity;
-using Unity.Lifetime;
 
 namespace AbstractWorkView
 {
@@ -19,25 +17,11 @@ namespace AbstractWorkView
         [STAThread]
         static void Main()
         {
-            var container = BuildUnityContainer();
-
+            APICustomer.Connect();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(container.Resolve<FormMy>());
+            Application.Run(new FormMy());
         }
 
-        public static IUnityContainer BuildUnityContainer()
-        {
-            var currentContainer = new UnityContainer();
-            currentContainer.RegisterType<DbContext, AbstractDbContext>(new HierarchicalLifetimeManager());
-            currentContainer.RegisterType<ICustomerService, CustomerServiceBD>(new HierarchicalLifetimeManager());
-            currentContainer.RegisterType<IMaterialService, MaterialServiceBD>(new HierarchicalLifetimeManager());
-            currentContainer.RegisterType<IWorkerService, WorkerServiceBD>(new HierarchicalLifetimeManager());
-            currentContainer.RegisterType<IRemontService, RemontServiceBD>(new HierarchicalLifetimeManager());
-            currentContainer.RegisterType<ISkladService, SkladServiceBD>(new HierarchicalLifetimeManager());
-            currentContainer.RegisterType<IMyService, MyServiceBD>(new HierarchicalLifetimeManager());
-            currentContainer.RegisterType<IReportService, ReportServiceBD>(new HierarchicalLifetimeManager());
-            return currentContainer;
-        }
     }
 }

@@ -25,7 +25,7 @@ namespace AbstractWorkService.ImplementationsList
                     Id = rec.Id,
                     RemontName = rec.RemontName,
                     Cost = rec.Cost,
-                    RemontMaterial = source.RemontMaterial
+                    RemontMaterials = source.RemontMaterial
                             .Where(recPC => recPC.RemontId == rec.Id)
                             .Select(recPC => new RemontMaterialViewModel
                             {
@@ -52,7 +52,7 @@ namespace AbstractWorkService.ImplementationsList
                     Id = element.Id,
                     RemontName = element.RemontName,
                     Cost = element.Cost,
-                    RemontMaterial = source.RemontMaterial
+                    RemontMaterials = source.RemontMaterial
                             .Where(recPC => recPC.RemontId == element.Id)
                             .Select(recPC => new RemontMaterialViewModel
                             {
@@ -88,7 +88,7 @@ namespace AbstractWorkService.ImplementationsList
             int maxPCId = source.RemontMaterial.Count > 0 ?
 source.RemontMaterial.Max(rec => rec.Id) : 0;
             // убираем дубли по компонентам
-            var groupMaterials = model.RemontMaterial
+            var groupMaterials = model.RemontMaterials
                                         .GroupBy(rec => rec.MaterialId)
                                         .Select(rec => new
                                         {
@@ -126,17 +126,17 @@ rec.RemontName == model.RemontName && rec.Id != model.Id);
 
             int maxPCId = source.RemontMaterial.Count > 0 ? source.RemontMaterial.Max(rec => rec.Id) : 0;
             // обновляем существуюущие компоненты
-            var compIds = model.RemontMaterial.Select(rec => rec.MaterialId).Distinct();
+            var compIds = model.RemontMaterials.Select(rec => rec.MaterialId).Distinct();
             var updateMaterials = source.RemontMaterial
                                             .Where(rec => rec.RemontId == model.Id &&
 compIds.Contains(rec.MaterialId));
             foreach (var updateMaterial in updateMaterials)
             {
-                updateMaterial.Koll = model.RemontMaterial
+                updateMaterial.Koll = model.RemontMaterials
                                                  .FirstOrDefault(rec => rec.Id == updateMaterial.Id).Koll;
             }
             // новые записи
-            var groupMaterials = model.RemontMaterial
+            var groupMaterials = model.RemontMaterials
                                         .Where(rec => rec.Id == 0)
                                         .GroupBy(rec => rec.MaterialId)
                                         .Select(rec => new

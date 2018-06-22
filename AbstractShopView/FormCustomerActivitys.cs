@@ -1,5 +1,6 @@
 ﻿using AbstractWorkService.BindingModels;
 using AbstractWorkService.Interfaces;
+using AbstractWorkService.ViewModels;
 using AbstractwWorkService.BindingModels;
 using Microsoft.Reporting.WinForms;
 using System;
@@ -11,22 +12,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractWorkView
 {
     public partial class FormCustomerActivitys : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
+        
 
-        private readonly IReportService service;
-
-        public FormCustomerActivitys(IReportService service)
+        public FormCustomerActivitys()
         {
             InitializeComponent();
-            this.service = service;
         }
 
         private void buttonMake_Click(object sender, EventArgs e)
@@ -43,14 +38,21 @@ namespace AbstractWorkView
                                             " по " + dateTimePickerTo.Value.ToShortDateString());
                 reportViewer1.LocalReport.SetParameters(parameter);
 
-                var dataSource = service.GetCustomerActivitys(new ReportBindingModel
+                var response = APICustomer.PostRequest("api/Report/GetCustomerActivitys", new ReportBindingModel
                 {
                     DateFrom = dateTimePickerFrom.Value,
                     DateTo = dateTimePickerTo.Value
                 });
-                ReportDataSource source = new ReportDataSource("DataSetActivity", dataSource);
-                reportViewer1.LocalReport.DataSources.Add(source);
-
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    var dataSource = APICustomer.GetElement<List<CustomerActivitysModel>>(response);
+                    ReportDataSource source = new ReportDataSource("DataSetActivitys", dataSource);
+                    reportViewer1.LocalReport.DataSources.Add(source);
+                }
+                else
+                {
+                    throw new Exception(APICustomer.GetError(response));
+                }
                 reportViewer1.RefreshReport();
             }
             catch (Exception ex)
@@ -97,13 +99,20 @@ namespace AbstractWorkView
             {
                 try
                 {
-                    service.SaveCustomerActivitys(new ReportBindingModel
+                    var response = APICustomer.PostRequest("api/Report/SaveCustomerActivitys", new ReportBindingModel
                     {
                         FileName = sfd.FileName,
                         DateFrom = dateTimePickerFrom.Value,
                         DateTo = dateTimePickerTo.Value
                     });
-                    MessageBox.Show("Выполнено", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    if (response.Result.IsSuccessStatusCode)
+                    {
+                        MessageBox.Show("Выполнено", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        throw new Exception(APICustomer.GetError(response));
+                    }
                 }
                 catch (Exception ex)
                 {

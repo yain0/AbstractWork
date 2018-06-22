@@ -1,5 +1,6 @@
 ﻿using AbstractWorkService.BindingModels;
 using AbstractWorkService.Interfaces;
+using AbstractWorkService.ViewModels;
 using AbstractwWorkService.BindingModels;
 using System;
 using System.Collections.Generic;
@@ -10,28 +11,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractWorkView
 {
-    public partial class FormSkladLoad : Form
+    public partial class FormSkladsLoad : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
-        private readonly IReportService service;
-
-        public FormSkladLoad(IReportService service)
+        public FormSkladsLoad()
         {
             InitializeComponent();
-            this.service = service;
         }
-
-       
-
-        
-
         private void dataGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
@@ -47,11 +35,18 @@ namespace AbstractWorkView
             {
                 try
                 {
-                    service.SaveSkladsLoad(new ReportBindingModel
+                    var response = APICustomer.PostRequest("api/Report/SaveSkladsLoad", new ReportBindingModel
                     {
                         FileName = sfd.FileName
                     });
-                    MessageBox.Show("Выполнено", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    if (response.Result.IsSuccessStatusCode)
+                    {
+                        MessageBox.Show("Выполнено", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        throw new Exception(APICustomer.GetError(response));
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -64,20 +59,24 @@ namespace AbstractWorkView
         {
             try
             {
-                var dict = service.GetSkladsLoad();
-                if (dict != null)
+                var response = APICustomer.GetRequest("api/Report/GetSkladsLoad");
+                if (response.Result.IsSuccessStatusCode)
                 {
                     dataGridView.Rows.Clear();
-                    foreach (var elem in dict)
+                    foreach (var elem in APICustomer.GetElement<List<SkladsLoadViewModel>>(response))
                     {
                         dataGridView.Rows.Add(new object[] { elem.SkladName, "", "" });
                         foreach (var listElem in elem.Materials)
                         {
-                            dataGridView.Rows.Add(new object[] { "", listElem.Item1, listElem.Item2 });
+                            dataGridView.Rows.Add(new object[] { "", listElem.MaterialName, listElem.Koll });
                         }
                         dataGridView.Rows.Add(new object[] { "Итого", "", elem.TotalKoll });
                         dataGridView.Rows.Add(new object[] { });
                     }
+                }
+                else
+                {
+                    throw new Exception(APICustomer.GetError(response));
                 }
             }
             catch (Exception ex)

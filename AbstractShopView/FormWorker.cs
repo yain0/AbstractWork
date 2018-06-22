@@ -2,27 +2,21 @@
 using AbstractWorkService.Interfaces;
 using AbstractWorkService.ViewModels;
 using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractWorkView
 {
     public partial class FormWorker : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
         public int Id { set { id = value; } }
-
-        private readonly IWorkerService service;
 
         private int? id;
 
-        public FormWorker(IWorkerService service)
+        public FormWorker()
         {
             InitializeComponent();
-            this.service = service;
         }
 
         private void FormWorker_Load(object sender, EventArgs e)
@@ -31,10 +25,15 @@ namespace AbstractWorkView
             {
                 try
                 {
-                    WorkerViewModel view = service.GetElement(id.Value);
-                    if (view != null)
+                    var response = APICustomer.GetRequest("api/Worker/Get/" + id.Value);
+                    if (response.Result.IsSuccessStatusCode)
                     {
-                        textBoxFIO.Text = view.WorkerFIO;
+                        var implementer = APICustomer.GetElement<WorkerViewModel>(response);
+                        textBoxFIO.Text = implementer.WorkerFIO;
+                    }
+                    else
+                    {
+                        throw new Exception(APICustomer.GetError(response));
                     }
                 }
                 catch (Exception ex)
@@ -53,9 +52,10 @@ namespace AbstractWorkView
             }
             try
             {
+                Task<HttpResponseMessage> response;
                 if (id.HasValue)
                 {
-                    service.UpdElement(new WorkerBindingModel
+                    response = APICustomer.PostRequest("api/Worker/UpdElement", new WorkerBindingModel
                     {
                         Id = id.Value,
                         WorkerFIO = textBoxFIO.Text
@@ -63,14 +63,21 @@ namespace AbstractWorkView
                 }
                 else
                 {
-                    service.AddElement(new WorkerBindingModel
+                    response = APICustomer.PostRequest("api/Worker/AddElement", new WorkerBindingModel
                     {
                         WorkerFIO = textBoxFIO.Text
                     });
                 }
-                MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                DialogResult = DialogResult.OK;
-                Close();
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Сохранение прошло успешно", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    DialogResult = DialogResult.OK;
+                    Close();
+                }
+                else
+                {
+                    throw new Exception(APICustomer.GetError(response));
+                }
             }
             catch (Exception ex)
             {

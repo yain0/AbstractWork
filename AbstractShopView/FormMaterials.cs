@@ -1,24 +1,17 @@
-﻿using AbstractWorkService.Interfaces;
+﻿using AbstractWorkService.BindingModels;
+using AbstractWorkService.Interfaces;
 using AbstractWorkService.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using Unity;
-using Unity.Attributes;
 
 namespace AbstractWorkView
 {
     public partial class FormMaterials : Form
     {
-        [Dependency]
-        public new IUnityContainer Container { get; set; }
-
-        private readonly IMaterialService service;
-
-        public FormMaterials(IMaterialService service)
+        public FormMaterials()
         {
             InitializeComponent();
-            this.service = service;
         }
 
         private void FormMaterials_Load(object sender, EventArgs e)
@@ -30,12 +23,20 @@ namespace AbstractWorkView
         {
             try
             {
-                List<MaterialViewModel> list = service.GetList();
-                if (list != null)
+                var response = APICustomer.GetRequest("api/Material/GetList");
+                if (response.Result.IsSuccessStatusCode)
                 {
-                    dataGridView.DataSource = list;
-                    dataGridView.Columns[0].Visible = false;
-                    dataGridView.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    List<MaterialViewModel> list = APICustomer.GetElement<List<MaterialViewModel>>(response);
+                    if (list != null)
+                    {
+                        dataGridView.DataSource = list;
+                        dataGridView.Columns[0].Visible = false;
+                        dataGridView.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    }
+                }
+                else
+                {
+                    throw new Exception(APICustomer.GetError(response));
                 }
             }
             catch (Exception ex)
@@ -45,7 +46,7 @@ namespace AbstractWorkView
         }
         private void buttonAdd_Click_1(object sender, EventArgs e)
         {
-            var form = Container.Resolve<FormMaterial>();
+            var form = new FormMaterial();
             if (form.ShowDialog() == DialogResult.OK)
             {
                 LoadData();
@@ -56,7 +57,7 @@ namespace AbstractWorkView
         {
             if (dataGridView.SelectedRows.Count == 1)
             {
-                var form = Container.Resolve<FormMaterial>();
+                var form = new FormMaterial();
                 form.Id = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value);
                 if (form.ShowDialog() == DialogResult.OK)
                 {
@@ -74,7 +75,11 @@ namespace AbstractWorkView
                     int id = Convert.ToInt32(dataGridView.SelectedRows[0].Cells[0].Value);
                     try
                     {
-                        service.DelElement(id);
+                        var response = APICustomer.PostRequest("api/Material/DelElement", new CustomerBindingModel { Id = id });
+                        if (!response.Result.IsSuccessStatusCode)
+                        {
+                            throw new Exception(APICustomer.GetError(response));
+                        }
                     }
                     catch (Exception ex)
                     {

@@ -24,7 +24,7 @@ namespace AbstractWorkService.ImplementationsBD
                 {
                     Id = rec.Id,
                     SkladName = rec.SkladName,
-                    SkladMaterial = context.SkladMaterials
+                    SkladMaterials = context.SkladMaterials
                             .Where(recPC => recPC.SkladId == rec.Id)
                             .Select(recPC => new SkladMaterialViewModel
                             {
@@ -49,7 +49,7 @@ namespace AbstractWorkService.ImplementationsBD
                 {
                     Id = element.Id,
                     SkladName = element.SkladName,
-                    SkladMaterial = context.SkladMaterials
+                    SkladMaterials = context.SkladMaterials
                             .Where(recPC => recPC.SkladId == element.Id)
                             .Select(recPC => new SkladMaterialViewModel
                             {
